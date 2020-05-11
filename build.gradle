@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'application'
+}
+
+group 'uk.ashleybye'
+version '0.0.1'
+
+sourceCompatibility = JavaVersion.VERSION_14
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation "org.slf4j:slf4j-api:2.0.0-alpha1"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
+}
+
+application {
+    mainClassName = 'uk.ashleybye.juggernaut.Engine'
+    applicationDefaultJvmArgs = ['-XstartOnFirstThread', '-XX:+ShowCodeDetailsInExceptionMessages']
+}
+
+wrapper {
+    gradleVersion = '6.4'
+}
+
+jacoco {
+    toolVersion = "0.8.5"
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+
+    jvmArgs '-XX:+ShowCodeDetailsInExceptionMessages'
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.enabled true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+        html.enabled false
+        csv.enabled false
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += '--enable-preview'
+}
