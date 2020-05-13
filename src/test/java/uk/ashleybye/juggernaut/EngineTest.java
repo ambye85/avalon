@@ -7,21 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EngineTest {
-  @Test
-  void helloFromEngine() {
-    var engine = new Engine();
-
-    assertEquals("Welcome to Juggernaut Engine!", engine.initialise());
-  }
 
   @Test
-  void engineLoadsApplicationFromClassName()
-      throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-    var engine = new Engine();
-    engine.createApplication("uk.ashleybye.juggernaut.ApplicationSpy");
+  void startEngineLoadsApplication() {
+    ApplicationSpy application = new ApplicationSpy();
+    var engine = new Engine(application);
 
-    var application = engine.getApplication();
+    engine.start();
 
-    assertTrue(application instanceof ApplicationSpy);
+    assertTrue(application.wasInitialised());
   }
 }
