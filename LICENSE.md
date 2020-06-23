@@ -1,4 +1,4 @@
-The Juggernaut Engine is licensed under the MIT License. See below for exceptions.
+The Avalon Engine is licensed under the MIT License. See below for exceptions.
 
     Copyright (c) 2020: Ashley Morton-Bye, and other contributors:
 
@@ -10,6 +10,6 @@ The Juggernaut Engine is licensed under the MIT License. See below for exception
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Juggernaut includes code from the following projects, which have their own licenses:
+Avalon includes code from the following projects, which have their own licenses:
 
     Gradle [Apache License 2.0]

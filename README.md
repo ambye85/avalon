@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/ambye85/juggernaut/branch/master/graph/badge.svg)](https://codecov.io/gh/ambye85/juggernaut)
 [![Maintainability](https://api.codeclimate.com/v1/badges/032de2bafcb47ed4ac13/maintainability)](https://codeclimate.com/github/ambye85/juggernaut/maintainability)
 
-# Juggernaut
+# Avalon
 
 ## Testing
 
