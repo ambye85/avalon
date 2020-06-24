@@ -21,8 +21,8 @@ public class Logger {
     this.color = switch (color) {
       case GREEN:
         yield Ansi.Color.GREEN;
-      case YELLOW:
-        yield Ansi.Color.YELLOW;
+      case CYAN:
+        yield Ansi.Color.CYAN;
     };
     this.clock = clock;
     this.out = out;
@@ -42,10 +42,10 @@ public class Logger {
 
   public enum Color {
     GREEN,
-    YELLOW,
+    CYAN,
   }
 
-  static class LoggerBuilder {
+  public static class LoggerBuilder {
 
     private final String name;
     private final Color color;

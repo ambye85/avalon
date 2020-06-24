@@ -17,6 +17,11 @@ public abstract class Application {
 
   private boolean running = false;
   private Window window;
+  private final LayerStack layers;
+
+  public Application() {
+    layers = new LayerStack();
+  }
 
   public final void run() {
     var properties = new WindowProperties("Avalon", 1280, 720, true, this::onEvent);
@@ -26,6 +31,11 @@ public abstract class Application {
     while (running) {
       glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
+
+      for (var layer : layers) {
+        layer.onUpdate();
+      }
+
       window.onUpdate();
     }
   }
@@ -34,7 +44,23 @@ public abstract class Application {
     logger.log(e.toString());
     var dispatcher = new EventDispatcher(e);
     dispatcher.dispatch(WindowCloseEvent.class, this::onWindowClose);
+
+    for (var layer : layers.reversed()) {
+      layer.onEvent(e);
+      if (e.isHandled()) {
+        break;
+      }
+    }
+
     return false;
+  }
+
+  public final void pushLayer(Layer layer) {
+    layers.pushLayer(layer);
+  }
+
+  public final void pushOverlay(Layer overlay) {
+    layers.pushOverlay(overlay);
   }
 
   private boolean onWindowClose(Event e) {

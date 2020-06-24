@@ -2,7 +2,7 @@ package uk.ashleybye.avalon;
 
 import static com.google.common.truth.Truth.assertThat;
 import static uk.ashleybye.avalon.Logger.Color.GREEN;
-import static uk.ashleybye.avalon.Logger.Color.YELLOW;
+import static uk.ashleybye.avalon.Logger.Color.CYAN;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public class LoggerTest {
 
   public static void main(String[] args) {
-    var l = Logger.builder("ASH", YELLOW).build();
+    var l = Logger.builder("ASH", CYAN).build();
     l.log("Hey hey!");
   }
 
