@@ -9,12 +9,24 @@ version '0.0.1'
 
 sourceCompatibility = JavaVersion.VERSION_14
 
+project.ext.lwjglVersion = "3.2.3"
+project.ext.lwjglNatives = "natives-macos"
+
 repositories {
     jcenter()
 }
 
 dependencies {
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
     implementation "org.fusesource.jansi:jansi:1.18"
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-opengl"
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
     testImplementation "com.google.truth:truth:1.0.1"
