@@ -2,6 +2,7 @@ package uk.ashleybye.sandbox;
 
 import static uk.ashleybye.avalon.input.KeyCodes.AVALON_KEY_TAB;
 
+import imgui.ImGui;
 import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
 import uk.ashleybye.avalon.event.Event;
@@ -33,7 +34,9 @@ class ExampleLayer extends Layer {
   }
 
   @Override
-  public void onEvent(Event event) {
-
+  public void onImGuiRender() {
+    ImGui.begin("test");
+    ImGui.text("Hello, world!");
+    ImGui.end();
   }
 }

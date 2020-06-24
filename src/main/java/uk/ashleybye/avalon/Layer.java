@@ -26,6 +26,10 @@ public abstract class Layer {
     // Intentionally not implemented.
   }
 
+  public void onImGuiRender() {
+    // Intentionally not implemented.
+  }
+
   public final String getDebugName() {
     return debugName;
   }

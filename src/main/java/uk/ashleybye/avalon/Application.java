@@ -50,17 +50,16 @@ public abstract class Application {
       for (var layer : layers) {
         layer.onUpdate();
       }
-//
-//      imGuiLayer.begin();
-//      for (var layer : layers) {
-//        layer.onImGuiRender();
-//      }
-//      imGuiLayer.end();
+
+      imGuiLayer.begin();
+      for (var layer : layers) {
+        layer.onImGuiRender();
+      }
+      imGuiLayer.end();
 
       window.onUpdate();
     }
 
-    imGuiLayer.dispose();
     window.dispose();
   }
 
