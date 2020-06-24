@@ -13,5 +13,7 @@ class KeyPressedEventTest {
     assertThat(event.getKeyCode()).isEqualTo(90);
     assertThat(event.getRepeatCount()).isEqualTo(1);
     assertThat(event.toString()).isEqualTo("KeyPressedEvent { keyCode: 90, repeatCount: 1 }");
+    assertThat(event.isInCategory(EventCategory.INPUT | EventCategory.KEYBOARD)).isTrue();
+    assertThat(event.getEventType()).isEqualTo(EventType.KEY_PRESSED);
   }
 }

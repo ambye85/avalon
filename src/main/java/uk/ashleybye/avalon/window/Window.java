@@ -15,6 +15,7 @@ import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
@@ -30,6 +31,7 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -40,6 +42,7 @@ import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import uk.ashleybye.avalon.event.EventCallback;
 import uk.ashleybye.avalon.event.KeyPressedEvent;
 import uk.ashleybye.avalon.event.KeyReleasedEvent;
+import uk.ashleybye.avalon.event.KeyTypedEvent;
 import uk.ashleybye.avalon.event.MouseButtonPressedEvent;
 import uk.ashleybye.avalon.event.MouseButtonReleasedEvent;
 import uk.ashleybye.avalon.event.MouseMovedEvent;
@@ -50,11 +53,12 @@ import uk.ashleybye.avalon.event.WindowResizeEvent;
 public class Window {
 
   private static boolean GLFWInitialised = false;
-  private final long window;
+  private final long windowId;
   private final String title;
   private final GLFWWindowSizeCallback windowSizeCallback;
   private final GLFWWindowCloseCallback windowCloseCallback;
   private final GLFWKeyCallback keyCallback;
+  private final GLFWCharCallback charCallback;
   private final GLFWMouseButtonCallback mouseButtonCallback;
   private final GLFWScrollCallback scrollCallback;
   private final GLFWCursorPosCallback cursorPosCallback;
@@ -87,11 +91,11 @@ public class Window {
       GLFWInitialised = true;
     }
 
-    window = glfwCreateWindow(width, height, title, NULL, NULL);
-    glfwMakeContextCurrent(window);
+    windowId = glfwCreateWindow(width, height, title, NULL, NULL);
+    glfwMakeContextCurrent(windowId);
     setVSync(true);
 
-    glfwSetWindowSizeCallback(window, windowSizeCallback = new GLFWWindowSizeCallback() {
+    glfwSetWindowSizeCallback(windowId, windowSizeCallback = new GLFWWindowSizeCallback() {
       @Override
       public void invoke(long wnd, int w, int h) {
         width = w;
@@ -102,7 +106,7 @@ public class Window {
       }
     });
 
-    glfwSetWindowCloseCallback(window, windowCloseCallback = new GLFWWindowCloseCallback() {
+    glfwSetWindowCloseCallback(windowId, windowCloseCallback = new GLFWWindowCloseCallback() {
       @Override
       public void invoke(long window) {
         var event = new WindowCloseEvent();
@@ -110,7 +114,7 @@ public class Window {
       }
     });
 
-    glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
+    glfwSetKeyCallback(windowId, keyCallback = new GLFWKeyCallback() {
       @Override
       public void invoke(long window, int key, int scancode, int action, int mods) {
         var event = switch (action) {
@@ -127,7 +131,15 @@ public class Window {
       }
     });
 
-    glfwSetMouseButtonCallback(window, mouseButtonCallback = new GLFWMouseButtonCallback() {
+    glfwSetCharCallback(windowId, charCallback = new GLFWCharCallback() {
+      @Override
+      public void invoke(long window, int codepoint) {
+        var event = new KeyTypedEvent(codepoint);
+        eventCallback.call(event);
+      }
+    });
+
+    glfwSetMouseButtonCallback(windowId, mouseButtonCallback = new GLFWMouseButtonCallback() {
       @Override
       public void invoke(long window, int button, int action, int mods) {
         var event = switch (action) {
@@ -142,7 +154,7 @@ public class Window {
       }
     });
 
-    glfwSetScrollCallback(window, scrollCallback = new GLFWScrollCallback() {
+    glfwSetScrollCallback(windowId, scrollCallback = new GLFWScrollCallback() {
       @Override
       public void invoke(long window, double xOffset, double yOffset) {
         var event = new MouseScrolledEvent(xOffset, yOffset);
@@ -150,7 +162,7 @@ public class Window {
       }
     });
 
-    glfwSetCursorPosCallback(window, cursorPosCallback = new GLFWCursorPosCallback() {
+    glfwSetCursorPosCallback(windowId, cursorPosCallback = new GLFWCursorPosCallback() {
       @Override
       public void invoke(long window, double xPos, double yPos) {
         var event = new MouseMovedEvent(xPos, yPos);
@@ -158,12 +170,16 @@ public class Window {
       }
     });
 
+    glfwShowWindow(windowId);
     createCapabilities();
-    glfwShowWindow(window);
   }
 
   public static Window create(WindowProperties properties) {
     return new Window(properties);
+  }
+
+  public long getWindowId() {
+    return windowId;
   }
 
   public int getWidth() {
@@ -176,7 +192,7 @@ public class Window {
 
   public void onUpdate() {
     glfwPollEvents();
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(windowId);
   }
 
   public boolean isVSync() {
@@ -193,11 +209,12 @@ public class Window {
     vSync = enabled;
   }
 
-  public void close() {
-    glfwDestroyWindow(window);
+  public void dispose() {
+    glfwDestroyWindow(windowId);
     windowSizeCallback.free();
     windowCloseCallback.free();
     keyCallback.free();
+    charCallback.free();
     mouseButtonCallback.free();
     scrollCallback.free();
     cursorPosCallback.free();

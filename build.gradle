@@ -9,11 +9,14 @@ version '0.0.1'
 
 sourceCompatibility = JavaVersion.VERSION_14
 
-project.ext.lwjglVersion = "3.2.3"
-project.ext.lwjglNatives = "natives-macos"
-
 repositories {
     jcenter()
+}
+
+ext {
+    lwjglVersion = "3.2.3"
+    imguiVersion = "1.76-0.13"
+    natives = "natives-macos"
 }
 
 dependencies {
@@ -24,9 +27,13 @@ dependencies {
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-glfw"
     implementation "org.lwjgl:lwjgl-opengl"
-    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    implementation "io.imgui.java:binding:$imguiVersion"
+    implementation "io.imgui.java:lwjgl3:$imguiVersion"
+
+    runtimeOnly "org.lwjgl:lwjgl::$natives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$natives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$natives"
+    runtimeOnly "io.imgui.java:$natives:$imguiVersion"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
     testImplementation "com.google.truth:truth:1.0.1"
