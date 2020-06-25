@@ -15,7 +15,6 @@ import static org.lwjgl.opengl.GL30C.glBindVertexArray;
 import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
 import static uk.ashleybye.avalon.Logger.Color.GREEN;
 
-import org.lwjgl.system.MemoryUtil;
 import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
@@ -23,8 +22,10 @@ import uk.ashleybye.avalon.imgui.ImGuiLayer;
 import uk.ashleybye.avalon.platform.macos.MacOSWindow;
 import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
+import uk.ashleybye.avalon.renderer.BufferLayout;
 import uk.ashleybye.avalon.renderer.IndexBuffer;
 import uk.ashleybye.avalon.renderer.Shader;
+import uk.ashleybye.avalon.renderer.ShaderDataType;
 import uk.ashleybye.avalon.renderer.VertexBuffer;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
@@ -67,11 +68,22 @@ public abstract class Application {
         0.0f,
     };
 
+    BufferLayout layout = BufferLayout.builder()
+        .addElement(ShaderDataType.FLOAT_3, "a_Position")
+        .build();
     vertexBuffer = new OpenGLVertexBuffer(vertices);
+    vertexBuffer.setLayout(layout);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES,
-        MemoryUtil.NULL);
+    int index = 0;
+    for (var element : vertexBuffer.getLayout()) {
+      glEnableVertexAttribArray(index);
+      glVertexAttribPointer(index, element.getComponentCount(), element.toOpenGLBaseType(), element.normalised(), vertexBuffer.getLayout().getStride(), element.offset());
+      index++;
+//    glEnableVertexAttribArray(1);
+//    glVertexAttribPointer(1, 4, GL_FLOAT, false, 7 * Float.BYTES,
+//        Float.BYTES * 3);
+    }
+
 
     int[] indices = new int[]{0, 1, 2};
     indexBuffer = new OpenGLIndexBuffer(indices);
