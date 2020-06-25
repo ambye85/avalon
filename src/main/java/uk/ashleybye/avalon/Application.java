@@ -60,6 +60,7 @@ public abstract class Application {
       window.onUpdate();
     }
 
+    popOverlay(imGuiLayer);
     window.dispose();
   }
 
@@ -85,6 +86,16 @@ public abstract class Application {
   public final void pushOverlay(Layer overlay) {
     layers.pushOverlay(overlay);
     overlay.onAttach();
+  }
+
+  public final void popLayer(Layer layer) {
+    layers.popLayer(layer);
+    layer.onDetach();
+  }
+
+  public final void popOverlay(Layer overlay) {
+    layers.popOverlay(overlay);
+    overlay.onDetach();
   }
 
   private boolean onWindowClose(Event e) {

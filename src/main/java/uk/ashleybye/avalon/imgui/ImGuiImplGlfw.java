@@ -10,6 +10,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
 import static org.lwjgl.glfw.GLFW.GLFW_HAND_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_HRESIZE_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_IBEAM_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_JOYSTICK_1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_C;
@@ -49,6 +50,8 @@ import static org.lwjgl.glfw.GLFW.glfwGetClipboardString;
 import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwGetInputMode;
+import static org.lwjgl.glfw.GLFW.glfwGetJoystickAxes;
+import static org.lwjgl.glfw.GLFW.glfwGetJoystickButtons;
 import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
@@ -74,8 +77,12 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiMouseCursor;
+import imgui.flag.ImGuiNavInput;
+import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -85,7 +92,7 @@ import org.lwjgl.system.MemoryStack;
 public class ImGuiImplGlfw {
 
   private static boolean[] mouseJustPressed = new boolean[ImGuiMouseButton.COUNT];
-  private final Long[] mouseCursors = new Long[ImGuiMouseCursor.COUNT];
+  private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
   private GLFWMouseButtonCallback mouseButtonCallback = null;
   private GLFWScrollCallback scrollCallback = null;
   private GLFWKeyCallback keyCallback = null;
@@ -226,6 +233,11 @@ public class ImGuiImplGlfw {
       charCallback = glfwSetCharCallback(windowId, this::charCallback);
     }
 
+//    if ((io.getConfigFlags() & ImGuiConfigFlags.DockingEnable) == ImGuiConfigFlags.DockingEnable) {
+//      var dockspaceId = ImGui.getID("MyDockspace");
+//      ImGui.dockSpace(dockspaceId, 0.0f, 0.0f);
+//    }
+
     return true;
   }
 
@@ -240,7 +252,7 @@ public class ImGuiImplGlfw {
 
     for (var i = 0; i < ImGuiMouseCursor.COUNT; i++) {
       glfwDestroyCursor(mouseCursors[i]);
-      mouseCursors[i] = null;
+      mouseCursors[i] = 0;
     }
   }
 
@@ -256,24 +268,25 @@ public class ImGuiImplGlfw {
     io.setMousePos(-Float.MAX_VALUE, -Float.MAX_VALUE);
     var focused = glfwGetWindowAttrib(windowId, GLFW_FOCUSED) != 0;
     if (focused) {
-      glfwSetCursorPos(windowId, (double) mousePosBackup.x, (double) mousePosBackup.y);
-    } else {
-      try (MemoryStack stack = stackPush()) {
-        DoubleBuffer xPos = stack.mallocDouble(1);
-        DoubleBuffer yPos = stack.mallocDouble(1);
-        glfwGetCursorPos(windowId, xPos, yPos);
-        io.setMousePos((float) xPos.get(), (float) yPos.get());
+      if (io.getWantSetMousePos()) {
+        glfwSetCursorPos(windowId, (double) mousePosBackup.x, (double) mousePosBackup.y);
+      } else {
+        try (MemoryStack stack = stackPush()) {
+          DoubleBuffer xPos = stack.mallocDouble(1);
+          DoubleBuffer yPos = stack.mallocDouble(1);
+          glfwGetCursorPos(windowId, xPos, yPos);
+          io.setMousePos((float) xPos.get(), (float) yPos.get());
+        }
       }
     }
   }
 
   public void updateMouseCursor() {
     ImGuiIO io = ImGui.getIO();
-    if (
-        (io.getConfigFlags() & ImGuiConfigFlags.NoMouseCursorChange)
-            == ImGuiConfigFlags.NoMouseCursorChange
-            || glfwGetInputMode(windowId, GLFW_CURSOR) == GLFW_CURSOR_DISABLED
-    ) {
+    final boolean noCursorChange = (io.getConfigFlags() & ImGuiConfigFlags.NoMouseCursorChange)
+        == ImGuiConfigFlags.NoMouseCursorChange;
+    final boolean cursorDisabled = glfwGetInputMode(windowId, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+    if (noCursorChange || cursorDisabled) {
       return;
     }
 
@@ -281,26 +294,35 @@ public class ImGuiImplGlfw {
     if (cursor == ImGuiMouseCursor.None || io.getMouseDrawCursor()) {
       glfwSetInputMode(windowId, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     } else {
-      glfwSetCursor(windowId, mouseCursors[cursor] != null ? mouseCursors[cursor]
+      glfwSetCursor(windowId, mouseCursors[cursor] != 0 ? mouseCursors[cursor]
           : mouseCursors[ImGuiMouseCursor.Arrow]);
       glfwSetInputMode(windowId, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
   }
 
   public void updateGamepads() {
-    // Not sure how to get the number of axis or buttons. TODO!
 //    ImGuiIO io = ImGui.getIO();
 //    if ((io.getConfigFlags() & ImGuiConfigFlags.NavEnableGamepad) == 0) {
 //      return;
 //    }
 //
-//    int axesCount = 0;
-//    int buttonsCount = 0;
-//    FloatBuffer axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
-//    axesCount = (int)axes.get();
+//    ByteBuffer buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
+//    final int buttonsCount = buttons.limit();
+////    for (var i = 0; buttonsBuffer.hasRemaining(); i++) {
+////      buttons[i] = buttonsBuffer.get();
+////    }
 //
-//    var buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
-
+//    FloatBuffer axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
+//    final int axisCount = axis.limit();
+////    for (var i = 0; axisBuffer.hasRemaining(); i++) {
+////      axis[i] = axisBuffer.get();
+////    }
+//
+//    var mapButton = (int navNo, int buttonNo) -> {
+//      if (buttonsCount > buttonNo && buttons.get(buttonNo) == GLFW_PRESS) {
+//        io.navInputs[navNo] = 1.0f;
+//      }
+//    };
   }
 
   private void mapButton() {

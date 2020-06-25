@@ -119,11 +119,11 @@ public final class ImGuiImplGl3 {
     createDeviceObjects();
   }
 
-  public void newFrame() {
-    if (gShaderHandle != 0) {
-      createDeviceObjects();
-    }
-  }
+//  public void newFrame() {
+//    if (gShaderHandle != 0) {
+//      createDeviceObjects();
+//    }
+//  }
 
   /**
    * Method to render {@link ImDrawData} into current OpenGL context.

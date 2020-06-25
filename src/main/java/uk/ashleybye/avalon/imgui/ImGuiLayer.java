@@ -55,7 +55,7 @@ public class ImGuiLayer extends Layer {
   }
 
   public void begin() {
-    imGuiGl3.newFrame();
+//    imGuiGl3.newFrame();
     imGuiGlfw.newFrame();
     ImGui.newFrame();
   }
@@ -74,6 +74,7 @@ public class ImGuiLayer extends Layer {
     ImGui.showDemoWindow(show);
   }
 
+  // KEEPING FOR NOW AS USEFUL FOR WHEN TURNING INTO OWN IMGUI BACKEND
   //  @Override
 //  public void onAttach() {
 //    ImGui.createContext();
