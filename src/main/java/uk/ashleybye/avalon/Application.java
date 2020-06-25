@@ -7,10 +7,6 @@ import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL11C.glDrawElements;
-import static org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15C.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15C.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL15C.glBufferData;
 import static org.lwjgl.opengl.GL15C.glGenBuffers;
 import static org.lwjgl.opengl.GL20C.glEnableVertexAttribArray;
@@ -19,12 +15,12 @@ import static org.lwjgl.opengl.GL30C.glBindVertexArray;
 import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
 import static uk.ashleybye.avalon.Logger.Color.GREEN;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryUtil;
 import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
+import uk.ashleybye.avalon.platform.macos.MacOSWindow;
 import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.IndexBuffer;
@@ -50,7 +46,7 @@ public abstract class Application {
     instance = this;
 
     var properties = new WindowProperties("Avalon", 1280, 720, true, this::onEvent);
-    window = Window.create(properties);
+    window = MacOSWindow.create(properties);
     layers = new LayerStack();
 
     imGuiLayer = new ImGuiLayer();
@@ -108,7 +104,7 @@ public abstract class Application {
     shader = new Shader(vertexSource, fragmentSource);
   }
 
-  public static final Application getInstance() {
+  public static Application getInstance() {
     return instance;
   }
 
@@ -141,6 +137,8 @@ public abstract class Application {
     }
 
     shader.dispose();
+    indexBuffer.dispose();
+    vertexBuffer.dispose();
     popOverlay(imGuiLayer);
     window.dispose();
   }
