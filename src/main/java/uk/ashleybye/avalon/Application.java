@@ -1,14 +1,11 @@
 package uk.ashleybye.avalon;
 
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_FLOAT;
 import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL11C.glDrawElements;
-import static org.lwjgl.opengl.GL15C.glBufferData;
-import static org.lwjgl.opengl.GL15C.glGenBuffers;
 import static org.lwjgl.opengl.GL20C.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20C.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30C.glBindVertexArray;
@@ -57,33 +54,31 @@ public abstract class Application {
     glBindVertexArray(vertexArray);
 
     float[] vertices = new float[]{
-        -0.5f,
-        -0.5f,
-        0.0f,
-        0.5f,
-        -0.5f,
-        0.0f,
-        0.0f,
-        0.5f,
-        0.0f,
+        -0.5F, -0.5F, 0.0F, 0.8F, 0.2F, 0.8F, 1.0F,
+        +0.5F, -0.5F, 0.0F, 0.2F, 0.3F, 0.8F, 1.0F,
+        +0.0F, +0.5F, 0.0F, 0.8F, 0.8F, 0.2F, 1.0F,
     };
 
-    BufferLayout layout = BufferLayout.builder()
-        .addElement(ShaderDataType.FLOAT_3, "a_Position")
-        .build();
-    vertexBuffer = new OpenGLVertexBuffer(vertices);
-    vertexBuffer.setLayout(layout);
+    {
+      BufferLayout layout = BufferLayout.builder()
+          .addElement(ShaderDataType.FLOAT_3, "a_Position")
+          .addElement(ShaderDataType.FLOAT_4, "a_Color")
+          .build();
+      vertexBuffer = new OpenGLVertexBuffer(vertices);
+      vertexBuffer.setLayout(layout);
+    }
 
     int index = 0;
-    for (var element : vertexBuffer.getLayout()) {
+    final BufferLayout layout = vertexBuffer.getLayout();
+    for (var element : layout) {
       glEnableVertexAttribArray(index);
-      glVertexAttribPointer(index, element.getComponentCount(), element.toOpenGLBaseType(), element.normalised(), vertexBuffer.getLayout().getStride(), element.offset());
+      glVertexAttribPointer(index, element.getComponentCount(), element.toOpenGLBaseType(),
+          element.normalised(), layout.getStride(), element.offset());
       index++;
 //    glEnableVertexAttribArray(1);
 //    glVertexAttribPointer(1, 4, GL_FLOAT, false, 7 * Float.BYTES,
 //        Float.BYTES * 3);
     }
-
 
     int[] indices = new int[]{0, 1, 2};
     indexBuffer = new OpenGLIndexBuffer(indices);
@@ -92,25 +87,26 @@ public abstract class Application {
         #version 330 core
               
         layout(location = 0) in vec3 a_Position;
+        layout(location = 1) in vec4 a_Color;
               
-        out vec3 v_Position;
+        out vec4 v_Color;
               
         void main()
         {
-          v_Position = a_Position;
+          v_Color = a_Color;
           gl_Position = vec4(a_Position, 1.0);
         }""";
 
     String fragmentSource = """
         #version 330 core
               
-        in vec3 v_Position;
+        in vec4 v_Color;
               
         out vec4 color;
               
         void main()
         {
-        color = vec4(v_Position * 0.5 + 0.5, 1.0);
+        color = v_Color;
         }""";
 
     shader = new Shader(vertexSource, fragmentSource);
