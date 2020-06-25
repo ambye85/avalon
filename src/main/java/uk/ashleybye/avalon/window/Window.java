@@ -13,7 +13,6 @@ import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
@@ -24,7 +23,6 @@ import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowCloseCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowSizeCallback;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
@@ -39,6 +37,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
+import uk.ashleybye.avalon.renderer.GraphicsContext;
 import uk.ashleybye.avalon.event.EventCallback;
 import uk.ashleybye.avalon.event.KeyPressedEvent;
 import uk.ashleybye.avalon.event.KeyReleasedEvent;
@@ -49,11 +48,13 @@ import uk.ashleybye.avalon.event.MouseMovedEvent;
 import uk.ashleybye.avalon.event.MouseScrolledEvent;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.event.WindowResizeEvent;
+import uk.ashleybye.avalon.platform.opengl.OpenGLContext;
 
 public class Window {
 
   private static boolean GLFWInitialised = false;
   private final long windowId;
+  private final GraphicsContext context;
   private final String title;
   private final GLFWWindowSizeCallback windowSizeCallback;
   private final GLFWWindowCloseCallback windowCloseCallback;
@@ -92,7 +93,8 @@ public class Window {
     }
 
     windowId = glfwCreateWindow(width, height, title, NULL, NULL);
-    glfwMakeContextCurrent(windowId);
+    context = new OpenGLContext(windowId);
+    context.initialise();
     setVSync(true);
 
     glfwSetWindowSizeCallback(windowId, windowSizeCallback = new GLFWWindowSizeCallback() {
@@ -171,7 +173,6 @@ public class Window {
     });
 
     glfwShowWindow(windowId);
-    createCapabilities();
   }
 
   public static Window create(WindowProperties properties) {
@@ -192,7 +193,7 @@ public class Window {
 
   public void onUpdate() {
     glfwPollEvents();
-    glfwSwapBuffers(windowId);
+    context.swapBuffers();
   }
 
   public boolean isVSync() {
