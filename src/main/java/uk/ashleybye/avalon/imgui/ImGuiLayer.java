@@ -3,7 +3,6 @@ package uk.ashleybye.avalon.imgui;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
-import imgui.flag.ImGuiMouseCursor;
 import imgui.type.ImBoolean;
 import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
@@ -11,9 +10,6 @@ import uk.ashleybye.avalon.event.Event;
 
 public class ImGuiLayer extends Layer {
 
-  // Mouse cursors provided by GLFW
-  private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
-  private float elapsedTime = 0.0f;
   private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
   private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
 
@@ -55,7 +51,7 @@ public class ImGuiLayer extends Layer {
   }
 
   public void begin() {
-//    imGuiGl3.newFrame();
+    imGuiGl3.newFrame();
     imGuiGlfw.newFrame();
     ImGui.newFrame();
   }
@@ -63,7 +59,7 @@ public class ImGuiLayer extends Layer {
   public void end() {
     ImGuiIO io = ImGui.getIO();
     var app = Application.getInstance();
-    io.setDisplaySize((float)app.getWindow().getWidth(), (float)app.getWindow().getHeight());
+    io.setDisplaySize((float) app.getWindow().getWidth(), (float) app.getWindow().getHeight());
     ImGui.render();
     imGuiGl3.render(ImGui.getDrawData());
   }
@@ -74,8 +70,10 @@ public class ImGuiLayer extends Layer {
     ImGui.showDemoWindow(show);
   }
 
-  // KEEPING FOR NOW AS USEFUL FOR WHEN TURNING INTO OWN IMGUI BACKEND
-  //  @Override
+/*********************************************************************/
+  /* KEEPING FOR NOW AS USEFUL FOR WHEN TURNING INTO OWN IMGUI BACKEND */
+/*********************************************************************/
+//  @Override
 //  public void onAttach() {
 //    ImGui.createContext();
 //    ImGui.styleColorsDark();

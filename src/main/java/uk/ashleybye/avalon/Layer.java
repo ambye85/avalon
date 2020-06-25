@@ -4,7 +4,7 @@ import uk.ashleybye.avalon.event.Event;
 
 public abstract class Layer {
 
-  private String debugName;
+  private final String debugName;
 
   public Layer(String debugName) {
     this.debugName = debugName;

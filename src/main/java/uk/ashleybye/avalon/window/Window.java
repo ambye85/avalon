@@ -62,10 +62,10 @@ public class Window {
   private final GLFWMouseButtonCallback mouseButtonCallback;
   private final GLFWScrollCallback scrollCallback;
   private final GLFWCursorPosCallback cursorPosCallback;
+  private final EventCallback eventCallback;
   private int width;
   private int height;
   private boolean vSync;
-  private final EventCallback eventCallback;
   private GLFWErrorCallback errorCallback;
 
   private Window(WindowProperties properties) {

@@ -1,33 +1,136 @@
 package uk.ashleybye.avalon.imgui;
 
+import static org.lwjgl.opengl.GL32.GL_ACTIVE_TEXTURE;
+import static org.lwjgl.opengl.GL32.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL32.GL_ARRAY_BUFFER_BINDING;
+import static org.lwjgl.opengl.GL32.GL_BLEND;
+import static org.lwjgl.opengl.GL32.GL_BLEND_DST_ALPHA;
+import static org.lwjgl.opengl.GL32.GL_BLEND_DST_RGB;
+import static org.lwjgl.opengl.GL32.GL_BLEND_EQUATION_ALPHA;
+import static org.lwjgl.opengl.GL32.GL_BLEND_EQUATION_RGB;
+import static org.lwjgl.opengl.GL32.GL_BLEND_SRC_ALPHA;
+import static org.lwjgl.opengl.GL32.GL_BLEND_SRC_RGB;
+import static org.lwjgl.opengl.GL32.GL_COMPILE_STATUS;
+import static org.lwjgl.opengl.GL32.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL32.GL_CURRENT_PROGRAM;
+import static org.lwjgl.opengl.GL32.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL32.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL32.GL_FALSE;
+import static org.lwjgl.opengl.GL32.GL_FLOAT;
+import static org.lwjgl.opengl.GL32.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL32.GL_FUNC_ADD;
+import static org.lwjgl.opengl.GL32.GL_LINEAR;
+import static org.lwjgl.opengl.GL32.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL32.GL_MAJOR_VERSION;
+import static org.lwjgl.opengl.GL32.GL_MINOR_VERSION;
+import static org.lwjgl.opengl.GL32.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL32.GL_RGBA;
+import static org.lwjgl.opengl.GL32.GL_SCISSOR_BOX;
+import static org.lwjgl.opengl.GL32.GL_SCISSOR_TEST;
+import static org.lwjgl.opengl.GL32.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL32.GL_STREAM_DRAW;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_BINDING_2D;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL32.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL32.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL32.GL_UNSIGNED_SHORT;
+import static org.lwjgl.opengl.GL32.GL_VERTEX_ARRAY_BINDING;
+import static org.lwjgl.opengl.GL32.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL32.GL_VIEWPORT;
+import static org.lwjgl.opengl.GL32.glActiveTexture;
+import static org.lwjgl.opengl.GL32.glAttachShader;
+import static org.lwjgl.opengl.GL32.glBindBuffer;
+import static org.lwjgl.opengl.GL32.glBindTexture;
+import static org.lwjgl.opengl.GL32.glBindVertexArray;
+import static org.lwjgl.opengl.GL32.glBlendEquation;
+import static org.lwjgl.opengl.GL32.glBlendEquationSeparate;
+import static org.lwjgl.opengl.GL32.glBlendFunc;
+import static org.lwjgl.opengl.GL32.glBlendFuncSeparate;
+import static org.lwjgl.opengl.GL32.glBufferData;
+import static org.lwjgl.opengl.GL32.glCompileShader;
+import static org.lwjgl.opengl.GL32.glCreateProgram;
+import static org.lwjgl.opengl.GL32.glCreateShader;
+import static org.lwjgl.opengl.GL32.glDeleteBuffers;
+import static org.lwjgl.opengl.GL32.glDeleteProgram;
+import static org.lwjgl.opengl.GL32.glDeleteTextures;
+import static org.lwjgl.opengl.GL32.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL32.glDetachShader;
+import static org.lwjgl.opengl.GL32.glDisable;
+import static org.lwjgl.opengl.GL32.glDrawElements;
+import static org.lwjgl.opengl.GL32.glDrawElementsBaseVertex;
+import static org.lwjgl.opengl.GL32.glEnable;
+import static org.lwjgl.opengl.GL32.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL32.glGenBuffers;
+import static org.lwjgl.opengl.GL32.glGenTextures;
+import static org.lwjgl.opengl.GL32.glGenVertexArrays;
+import static org.lwjgl.opengl.GL32.glGetAttribLocation;
+import static org.lwjgl.opengl.GL32.glGetIntegerv;
+import static org.lwjgl.opengl.GL32.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL32.glGetProgrami;
+import static org.lwjgl.opengl.GL32.glGetShaderInfoLog;
+import static org.lwjgl.opengl.GL32.glGetShaderi;
+import static org.lwjgl.opengl.GL32.glGetUniformLocation;
+import static org.lwjgl.opengl.GL32.glIsEnabled;
+import static org.lwjgl.opengl.GL32.glLinkProgram;
+import static org.lwjgl.opengl.GL32.glScissor;
+import static org.lwjgl.opengl.GL32.glShaderSource;
+import static org.lwjgl.opengl.GL32.glTexImage2D;
+import static org.lwjgl.opengl.GL32.glTexParameteri;
+import static org.lwjgl.opengl.GL32.glUniform1i;
+import static org.lwjgl.opengl.GL32.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL32.glUseProgram;
+import static org.lwjgl.opengl.GL32.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL32.glViewport;
+
 import imgui.ImDrawData;
 import imgui.ImFontAtlas;
 import imgui.ImGui;
 import imgui.ImGuiIO;
-import imgui.type.ImInt;
 import imgui.ImVec2;
 import imgui.ImVec4;
 import imgui.flag.ImGuiBackendFlags;
-
+import imgui.type.ImInt;
 import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.lwjgl.opengl.GL32.*;
 
 /**
  * This class is a straightforward port of the
  * <a href="https://raw.githubusercontent.com/ocornut/imgui/v1.76/examples/imgui_impl_opengl3.cpp">imgui_impl_opengl3.cpp</a>.
  * <p>
- * It do support a backup and restoring of the GL state in the same way the original Dear ImGui code does.
- * Some of the very specific OpenGL variables may be ignored here,
- * yet you can copy-paste this class in your codebase and modify the rendering routine in the way you'd like.
+ * It do support a backup and restoring of the GL state in the same way the original Dear ImGui code
+ * does. Some of the very specific OpenGL variables may be ignored here, yet you can copy-paste this
+ * class in your codebase and modify the rendering routine in the way you'd like.
  * <p>
  * This implementation has an ability to use a GLSL version provided during the initialization.
  * Please read the documentation for the {@link #init(String)}.
  */
 @SuppressWarnings("MagicNumber")
 public final class ImGuiImplGl3 {
+
+  // Used to store tmp renderer data
+  private final ImVec2 displaySize = new ImVec2();
+  private final ImVec2 framebufferScale = new ImVec2();
+  private final ImVec2 displayPos = new ImVec2();
+  private final ImVec4 clipRect = new ImVec4();
+  private final float[] orthoProjMatrix = new float[4 * 4];
+  // Variables used to backup GL state before and after the rendering of Dear ImGui
+  private final int[] lastActiveTexture = new int[1];
+  private final int[] lastProgram = new int[1];
+  private final int[] lastTexture = new int[1];
+  private final int[] lastArrayBuffer = new int[1];
+  private final int[] lastVertexArrayObject = new int[1];
+  private final int[] lastViewport = new int[4];
+  private final int[] lastScissorBox = new int[4];
+  private final int[] lastBlendSrcRgb = new int[1];
+  private final int[] lastBlendDstRgb = new int[1];
+  private final int[] lastBlendSrcAlpha = new int[1];
+  private final int[] lastBlendDstAlpha = new int[1];
+  private final int[] lastBlendEquationRgb = new int[1];
+  private final int[] lastBlendEquationAlpha = new int[1];
   // OpenGL Data
   private int glVersion = 0;
   private String glslVersion = "";
@@ -43,47 +146,25 @@ public final class ImGuiImplGl3 {
   private int gAttribLocationVtxColor = 0;
   private int gFontTexture = 0;
   private int gVertexArrayObjectHandle = 0;
-
-  // Used to store tmp renderer data
-  private final ImVec2 displaySize = new ImVec2();
-  private final ImVec2 framebufferScale = new ImVec2();
-  private final ImVec2 displayPos = new ImVec2();
-  private final ImVec4 clipRect = new ImVec4();
-  private final float[] orthoProjMatrix = new float[4 * 4];
-
-  // Variables used to backup GL state before and after the rendering of Dear ImGui
-  private final int[] lastActiveTexture = new int[1];
-  private final int[] lastProgram = new int[1];
-  private final int[] lastTexture = new int[1];
-  private final int[] lastArrayBuffer = new int[1];
-  private final int[] lastVertexArrayObject = new int[1];
-  private final int[] lastViewport = new int[4];
-  private final int[] lastScissorBox = new int[4];
-  private final int[] lastBlendSrcRgb = new int[1];
-  private final int[] lastBlendDstRgb = new int[1];
-  private final int[] lastBlendSrcAlpha = new int[1];
-  private final int[] lastBlendDstAlpha = new int[1];
-  private final int[] lastBlendEquationRgb = new int[1];
-  private final int[] lastBlendEquationAlpha = new int[1];
   private boolean lastEnableBlend = false;
   private boolean lastEnableCullFace = false;
   private boolean lastEnableDepthTest = false;
   private boolean lastEnableScissorTest = false;
 
   /**
-   * Method to do an initialization of the {@link imgui.gl3.ImGuiImplGl3} state.
-   * It SHOULD be called before calling of the {@link imgui.gl3.ImGuiImplGl3#render(ImDrawData)} method.
+   * Method to do an initialization of the {@link imgui.gl3.ImGuiImplGl3} state. It SHOULD be called
+   * before calling of the {@link imgui.gl3.ImGuiImplGl3#render(ImDrawData)} method.
    * <p>
-   * Unlike in the {@link #init(String)} method, here the glslVersion argument is omitted.
-   * Thus a "#version 130" string will be used instead.
+   * Unlike in the {@link #init(String)} method, here the glslVersion argument is omitted. Thus a
+   * "#version 130" string will be used instead.
    */
   public void init() {
     init(null);
   }
 
   /**
-   * Method to do an initialization of the {@link imgui.gl3.ImGuiImplGl3} state.
-   * It SHOULD be called before calling of the {@link imgui.gl3.ImGuiImplGl3#render(ImDrawData)} method.
+   * Method to do an initialization of the {@link imgui.gl3.ImGuiImplGl3} state. It SHOULD be called
+   * before calling of the {@link imgui.gl3.ImGuiImplGl3#render(ImDrawData)} method.
    * <p>
    * Method takes an argument, which should be a valid GLSL string with the version to use.
    * <pre>
@@ -119,11 +200,11 @@ public final class ImGuiImplGl3 {
     createDeviceObjects();
   }
 
-//  public void newFrame() {
-//    if (gShaderHandle != 0) {
-//      createDeviceObjects();
-//    }
-//  }
+  public void newFrame() {
+    if (gShaderHandle != 0) {
+      createDeviceObjects();
+    }
+  }
 
   /**
    * Method to render {@link ImDrawData} into current OpenGL context.
@@ -135,7 +216,8 @@ public final class ImGuiImplGl3 {
 
     // Will project scissor/clipping rectangles into framebuffer space
     drawData.getDisplaySize(displaySize);           // (0,0) unless using multi-viewports
-    drawData.getFramebufferScale(framebufferScale); // (1,1) unless using retina display which are often (2,2)
+    drawData.getFramebufferScale(
+        framebufferScale); // (1,1) unless using retina display which are often (2,2)
 
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     final int fbWidth = (int) (displaySize.x * framebufferScale.x);
@@ -154,9 +236,11 @@ public final class ImGuiImplGl3 {
     for (int cmdListIdx = 0; cmdListIdx < drawData.getCmdListsCount(); cmdListIdx++) {
       // Upload vertex/index buffers
       glBufferData(GL_ARRAY_BUFFER, drawData.getCmdListVtxBufferData(cmdListIdx), GL_STREAM_DRAW);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, drawData.getCmdListIdxBufferData(cmdListIdx), GL_STREAM_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, drawData.getCmdListIdxBufferData(cmdListIdx),
+          GL_STREAM_DRAW);
 
-      for (int cmdBufferIdx = 0; cmdBufferIdx < drawData.getCmdListCmdBufferSize(cmdListIdx); cmdBufferIdx++) {
+      for (int cmdBufferIdx = 0; cmdBufferIdx < drawData.getCmdListCmdBufferSize(cmdListIdx);
+          cmdBufferIdx++) {
         drawData.getCmdListCmdBufferClipRect(cmdListIdx, cmdBufferIdx, clipRect);
 
         final float clipRectX = (clipRect.x - displayPos.x) * framebufferScale.x;
@@ -166,19 +250,23 @@ public final class ImGuiImplGl3 {
 
         if (clipRectX < fbWidth && clipRectY < fbHeight && clipRectZ >= 0.0f && clipRectW >= 0.0f) {
           // Apply scissor/clipping rectangle
-          glScissor((int) clipRectX, (int) (fbHeight - clipRectW), (int) (clipRectZ - clipRectX), (int) (clipRectW - clipRectY));
+          glScissor((int) clipRectX, (int) (fbHeight - clipRectW), (int) (clipRectZ - clipRectX),
+              (int) (clipRectW - clipRectY));
 
           // Bind texture, Draw
           final int textureId = drawData.getCmdListCmdBufferTextureId(cmdListIdx, cmdBufferIdx);
           final int elemCount = drawData.getCmdListCmdBufferElemCount(cmdListIdx, cmdBufferIdx);
-          final int idxBufferOffset = drawData.getCmdListCmdBufferIdxOffset(cmdListIdx, cmdBufferIdx);
-          final int vtxBufferOffset = drawData.getCmdListCmdBufferVtxOffset(cmdListIdx, cmdBufferIdx);
+          final int idxBufferOffset = drawData
+              .getCmdListCmdBufferIdxOffset(cmdListIdx, cmdBufferIdx);
+          final int vtxBufferOffset = drawData
+              .getCmdListCmdBufferVtxOffset(cmdListIdx, cmdBufferIdx);
           final int indices = idxBufferOffset * ImDrawData.SIZEOF_IM_DRAW_IDX;
 
           glBindTexture(GL_TEXTURE_2D, textureId);
 
           if (glVersion >= 320) {
-            glDrawElementsBaseVertex(GL_TRIANGLES, elemCount, GL_UNSIGNED_SHORT, indices, vtxBufferOffset);
+            glDrawElementsBaseVertex(GL_TRIANGLES, elemCount, GL_UNSIGNED_SHORT, indices,
+                vtxBufferOffset);
           } else {
             glDrawElements(GL_TRIANGLES, elemCount, GL_UNSIGNED_SHORT, indices);
           }
@@ -191,7 +279,8 @@ public final class ImGuiImplGl3 {
   }
 
   /**
-   * Call this method in the end of your application cycle to dispose resources used by {@link imgui.gl3.ImGuiImplGl3}.
+   * Call this method in the end of your application cycle to dispose resources used by {@link
+   * imgui.gl3.ImGuiImplGl3}.
    */
   public void shutdown() {
     glDeleteBuffers(gVboHandle);
@@ -203,7 +292,8 @@ public final class ImGuiImplGl3 {
   }
 
   /**
-   * Method rebuilds the font atlas for Dear ImGui. Could be used to update application fonts in runtime.
+   * Method rebuilds the font atlas for Dear ImGui. Could be used to update application fonts in
+   * runtime.
    */
   public void updateFontsTexture() {
     glDeleteTextures(gFontTexture);
@@ -219,7 +309,8 @@ public final class ImGuiImplGl3 {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(), height.get(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(), height.get(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        buffer);
 
     fontAtlas.setTexID(gFontTexture);
   }
@@ -299,7 +390,8 @@ public final class ImGuiImplGl3 {
     glLinkProgram(gShaderHandle);
 
     if (glGetProgrami(gShaderHandle, GL_LINK_STATUS) == GL_FALSE) {
-      throw new IllegalStateException("Failed to link shader program:\n" + glGetProgramInfoLog(gShaderHandle));
+      throw new IllegalStateException(
+          "Failed to link shader program:\n" + glGetProgramInfoLog(gShaderHandle));
     }
   }
 
@@ -342,12 +434,29 @@ public final class ImGuiImplGl3 {
     glBindVertexArray(lastVertexArrayObject[0]);
     glBindBuffer(GL_ARRAY_BUFFER, lastArrayBuffer[0]);
     glBlendEquationSeparate(lastBlendEquationRgb[0], lastBlendEquationAlpha[0]);
-    glBlendFuncSeparate(lastBlendSrcRgb[0], lastBlendDstRgb[0], lastBlendSrcAlpha[0], lastBlendDstAlpha[0]);
+    glBlendFuncSeparate(lastBlendSrcRgb[0], lastBlendDstRgb[0], lastBlendSrcAlpha[0],
+        lastBlendDstAlpha[0]);
     // @formatter:off CHECKSTYLE:OFF
-    if (lastEnableBlend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
-    if (lastEnableCullFace) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-    if (lastEnableDepthTest) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
-    if (lastEnableScissorTest) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
+    if (lastEnableBlend) {
+      glEnable(GL_BLEND);
+    } else {
+      glDisable(GL_BLEND);
+    }
+    if (lastEnableCullFace) {
+      glEnable(GL_CULL_FACE);
+    } else {
+      glDisable(GL_CULL_FACE);
+    }
+    if (lastEnableDepthTest) {
+      glEnable(GL_DEPTH_TEST);
+    } else {
+      glDisable(GL_DEPTH_TEST);
+    }
+    if (lastEnableScissorTest) {
+      glEnable(GL_SCISSOR_TEST);
+    } else {
+      glDisable(GL_SCISSOR_TEST);
+    }
     // @formatter:on CHECKSTYLE:ON
     glViewport(lastViewport[0], lastViewport[1], lastViewport[2], lastViewport[3]);
     glScissor(lastScissorBox[0], lastScissorBox[1], lastScissorBox[2], lastScissorBox[3]);
@@ -397,9 +506,12 @@ public final class ImGuiImplGl3 {
     glEnableVertexAttribArray(gAttribLocationVtxPos);
     glEnableVertexAttribArray(gAttribLocationVtxUV);
     glEnableVertexAttribArray(gAttribLocationVtxColor);
-    glVertexAttribPointer(gAttribLocationVtxPos, 2, GL_FLOAT, false, ImDrawData.SIZEOF_IM_DRAW_VERT, 0);
-    glVertexAttribPointer(gAttribLocationVtxUV, 2, GL_FLOAT, false, ImDrawData.SIZEOF_IM_DRAW_VERT, 8);
-    glVertexAttribPointer(gAttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, true, ImDrawData.SIZEOF_IM_DRAW_VERT, 16);
+    glVertexAttribPointer(gAttribLocationVtxPos, 2, GL_FLOAT, false, ImDrawData.SIZEOF_IM_DRAW_VERT,
+        0);
+    glVertexAttribPointer(gAttribLocationVtxUV, 2, GL_FLOAT, false, ImDrawData.SIZEOF_IM_DRAW_VERT,
+        8);
+    glVertexAttribPointer(gAttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, true,
+        ImDrawData.SIZEOF_IM_DRAW_VERT, 16);
   }
 
   private void unbind() {

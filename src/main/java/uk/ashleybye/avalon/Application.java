@@ -9,18 +9,17 @@ import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
-import uk.ashleybye.avalon.input.Input;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
 public abstract class Application {
 
   private static Application instance = null;
-  private static Logger logger = Logger.builder("AVALON", GREEN).build();
-  private boolean running = false;
-  private Window window;
+  private static final Logger logger = Logger.builder("AVALON", GREEN).build();
   private final LayerStack layers;
   private final ImGuiLayer imGuiLayer;
+  private boolean running = false;
+  private final Window window;
 
   public Application() {
     instance = this;

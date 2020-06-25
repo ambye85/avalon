@@ -7,7 +7,6 @@ import static org.lwjgl.glfw.GLFW.glfwGetKey;
 import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 
 import java.nio.DoubleBuffer;
-import java.util.Map;
 import org.lwjgl.system.MemoryStack;
 import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Pair;

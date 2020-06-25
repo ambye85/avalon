@@ -1,8 +1,8 @@
 package uk.ashleybye.avalon;
 
 import static com.google.common.truth.Truth.assertThat;
-import static uk.ashleybye.avalon.Logger.Color.GREEN;
 import static uk.ashleybye.avalon.Logger.Color.CYAN;
+import static uk.ashleybye.avalon.Logger.Color.GREEN;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

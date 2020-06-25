@@ -10,7 +10,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
 import static org.lwjgl.glfw.GLFW.GLFW_HAND_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_HRESIZE_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_IBEAM_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_JOYSTICK_1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_C;
@@ -50,8 +49,6 @@ import static org.lwjgl.glfw.GLFW.glfwGetClipboardString;
 import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwGetInputMode;
-import static org.lwjgl.glfw.GLFW.glfwGetJoystickAxes;
-import static org.lwjgl.glfw.GLFW.glfwGetJoystickButtons;
 import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
@@ -77,12 +74,8 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiMouseCursor;
-import imgui.flag.ImGuiNavInput;
-import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -91,27 +84,27 @@ import org.lwjgl.system.MemoryStack;
 
 public class ImGuiImplGlfw {
 
-  private static boolean[] mouseJustPressed = new boolean[ImGuiMouseButton.COUNT];
+  private static final boolean[] mouseJustPressed = new boolean[ImGuiMouseButton.COUNT];
   private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
-  private GLFWMouseButtonCallback mouseButtonCallback = null;
-  private GLFWScrollCallback scrollCallback = null;
-  private GLFWKeyCallback keyCallback = null;
-  private GLFWCharCallback charCallback = null;
+  private GLFWMouseButtonCallback previousMouseButtonCallback = null;
+  private GLFWScrollCallback previousScrollCallback = null;
+  private GLFWKeyCallback previousKeyCallback = null;
+  private GLFWCharCallback previousCharCallback = null;
   private long windowId;
   private boolean callbacksInstalled;
   private double time = 0.0;
 
-  public String getClipboardText(long windowId) {
+  public static String getClipboardText(long windowId) {
     return glfwGetClipboardString(windowId);
   }
 
-  public void setClipboardString(long windowId, String text) {
+  public static void setClipboardString(long windowId, String text) {
     glfwSetClipboardString(windowId, text);
   }
 
   public void mouseButtonCallback(long windowId, int button, int action, int mods) {
-    if (mouseButtonCallback != null) {
-      mouseButtonCallback.invoke(windowId, button, action, mods);
+    if (previousMouseButtonCallback != null) {
+      previousMouseButtonCallback.invoke(windowId, button, action, mods);
     }
 
     if (action == GLFW_PRESS && button >= 0 && button < mouseJustPressed.length) {
@@ -120,8 +113,8 @@ public class ImGuiImplGlfw {
   }
 
   public void scrollCallback(long windowId, double xOffset, double yOffset) {
-    if (scrollCallback != null) {
-      scrollCallback.invoke(windowId, xOffset, yOffset);
+    if (previousScrollCallback != null) {
+      previousScrollCallback.invoke(windowId, xOffset, yOffset);
     }
 
     ImGuiIO io = ImGui.getIO();
@@ -130,8 +123,8 @@ public class ImGuiImplGlfw {
   }
 
   public void keyCallback(long windowId, int key, int scancode, int action, int mods) {
-    if (keyCallback != null) {
-      keyCallback.invoke(windowId, key, scancode, action, mods);
+    if (previousKeyCallback != null) {
+      previousKeyCallback.invoke(windowId, key, scancode, action, mods);
     }
 
     ImGuiIO io = ImGui.getIO();
@@ -149,8 +142,8 @@ public class ImGuiImplGlfw {
   }
 
   public void charCallback(long windowId, int c) {
-    if (charCallback != null) {
-      charCallback.invoke(windowId, c);
+    if (previousCharCallback != null) {
+      previousCharCallback.invoke(windowId, c);
     }
 
     ImGuiIO io = ImGui.getIO();
@@ -221,32 +214,27 @@ public class ImGuiImplGlfw {
     mouseCursors[ImGuiMouseCursor.NotAllowed] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
     glfwSetErrorCallback(prevErrorCallback);
 
-    mouseButtonCallback = null;
-    scrollCallback = null;
-    keyCallback = null;
-    charCallback = null;
+    previousMouseButtonCallback = null;
+    previousScrollCallback = null;
+    previousKeyCallback = null;
+    previousCharCallback = null;
     if (installCallbacks) {
       callbacksInstalled = true;
-      mouseButtonCallback = glfwSetMouseButtonCallback(windowId, this::mouseButtonCallback);
-      scrollCallback = glfwSetScrollCallback(windowId, this::scrollCallback);
-      keyCallback = glfwSetKeyCallback(windowId, this::keyCallback);
-      charCallback = glfwSetCharCallback(windowId, this::charCallback);
+      previousMouseButtonCallback = glfwSetMouseButtonCallback(windowId, this::mouseButtonCallback);
+      previousScrollCallback = glfwSetScrollCallback(windowId, this::scrollCallback);
+      previousKeyCallback = glfwSetKeyCallback(windowId, this::keyCallback);
+      previousCharCallback = glfwSetCharCallback(windowId, this::charCallback);
     }
-
-//    if ((io.getConfigFlags() & ImGuiConfigFlags.DockingEnable) == ImGuiConfigFlags.DockingEnable) {
-//      var dockspaceId = ImGui.getID("MyDockspace");
-//      ImGui.dockSpace(dockspaceId, 0.0f, 0.0f);
-//    }
 
     return true;
   }
 
   public void shutdown() {
     if (callbacksInstalled) {
-      glfwSetMouseButtonCallback(windowId, this::mouseButtonCallback);
-      glfwSetScrollCallback(windowId, this::scrollCallback);
-      glfwSetKeyCallback(windowId, this::keyCallback);
-      glfwSetCharCallback(windowId, this::charCallback);
+      glfwSetMouseButtonCallback(windowId, previousMouseButtonCallback);
+      glfwSetScrollCallback(windowId, previousScrollCallback);
+      glfwSetKeyCallback(windowId, previousKeyCallback);
+      glfwSetCharCallback(windowId, previousCharCallback);
       callbacksInstalled = false;
     }
 
@@ -269,7 +257,7 @@ public class ImGuiImplGlfw {
     var focused = glfwGetWindowAttrib(windowId, GLFW_FOCUSED) != 0;
     if (focused) {
       if (io.getWantSetMousePos()) {
-        glfwSetCursorPos(windowId, (double) mousePosBackup.x, (double) mousePosBackup.y);
+        glfwSetCursorPos(windowId, mousePosBackup.x, mousePosBackup.y);
       } else {
         try (MemoryStack stack = stackPush()) {
           DoubleBuffer xPos = stack.mallocDouble(1);
@@ -323,12 +311,6 @@ public class ImGuiImplGlfw {
 //        io.navInputs[navNo] = 1.0f;
 //      }
 //    };
-  }
-
-  private void mapButton() {
-  }
-
-  private void mapAnalog() {
   }
 
   public void newFrame() {

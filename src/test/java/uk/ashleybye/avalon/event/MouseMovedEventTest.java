@@ -3,7 +3,6 @@ package uk.ashleybye.avalon.event;
 import static com.google.common.truth.Truth.assertThat;
 import static uk.ashleybye.avalon.event.EventCategory.INPUT;
 import static uk.ashleybye.avalon.event.EventCategory.MOUSE;
-import static uk.ashleybye.avalon.event.EventCategory.MOUSE_BUTTON;
 
 import org.junit.jupiter.api.Test;
 

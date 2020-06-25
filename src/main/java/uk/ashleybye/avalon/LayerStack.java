@@ -6,8 +6,8 @@ import java.util.List;
 
 public class LayerStack implements Iterable<Layer> {
 
-  private int currentLayer;
   private final List<Layer> layers;
+  private int currentLayer;
 
   public LayerStack() {
     layers = new ArrayList<>();
