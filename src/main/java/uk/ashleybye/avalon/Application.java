@@ -25,7 +25,11 @@ import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
+import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
+import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
+import uk.ashleybye.avalon.renderer.IndexBuffer;
 import uk.ashleybye.avalon.renderer.Shader;
+import uk.ashleybye.avalon.renderer.VertexBuffer;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
@@ -35,11 +39,11 @@ public abstract class Application {
   private static final Logger logger = Logger.builder("AVALON", GREEN).build();
   private final LayerStack layers;
   private final ImGuiLayer imGuiLayer;
-  private final int vertexArray;
-  private final int vertexBuffer;
-  private final int indexBuffer;
   private boolean running = false;
   private final Window window;
+  private final int vertexArray;
+  private final VertexBuffer vertexBuffer;
+  private final IndexBuffer indexBuffer;
   private Shader shader;
 
   public Application() {
@@ -55,9 +59,6 @@ public abstract class Application {
     vertexArray = glGenVertexArrays();
     glBindVertexArray(vertexArray);
 
-    vertexBuffer = glGenBuffers();
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-
     float[] vertices = new float[]{
         -0.5f,
         -0.5f,
@@ -70,19 +71,14 @@ public abstract class Application {
         0.0f,
     };
 
-    glBufferData(GL_ARRAY_BUFFER,
-        BufferUtils.createFloatBuffer(vertices.length).put(vertices).flip(), GL_STATIC_DRAW);
+    vertexBuffer = new OpenGLVertexBuffer(vertices);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES,
-        MemoryUtil.NULL); // Possible cause of problems.
-
-    indexBuffer = glGenBuffers();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+        MemoryUtil.NULL);
 
     int[] indices = new int[]{0, 1, 2};
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-        BufferUtils.createIntBuffer(indices.length).put(indices).flip(), GL_STATIC_DRAW);
+    indexBuffer = new OpenGLIndexBuffer(indices);
 
     String vertexSource = """
         #version 330 core
@@ -128,7 +124,7 @@ public abstract class Application {
 
       shader.bind();
       glBindVertexArray(vertexArray);
-      glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0L);
+      glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, 0L);
       shader.unbind();
 
       for (var layer : layers) {
