@@ -72,15 +72,15 @@ public class OpenGLVertexArray implements VertexArray {
   }
 
   @Override
+  public IndexBuffer getIndexBuffer() {
+    return indexBuffer;
+  }
+
+  @Override
   public void setIndexBuffer(IndexBuffer indexBuffer) {
     this.indexBuffer = indexBuffer;
     glBindVertexArray(vertexArray);
     indexBuffer.bind();
     glBindVertexArray(0);
-  }
-
-  @Override
-  public IndexBuffer getIndexBuffer() {
-    return indexBuffer;
   }
 }

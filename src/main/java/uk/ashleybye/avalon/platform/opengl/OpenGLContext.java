@@ -10,7 +10,7 @@ import uk.ashleybye.avalon.renderer.GraphicsContext;
 
 public class OpenGLContext implements GraphicsContext {
 
-  private long windowId;
+  private final long windowId;
 
   public OpenGLContext(long windowId) {
     this.windowId = windowId;

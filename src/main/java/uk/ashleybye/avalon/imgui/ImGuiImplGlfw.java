@@ -82,7 +82,6 @@ import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.function.BiFunction;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -307,22 +306,22 @@ public class ImGuiImplGlfw {
     FloatBuffer axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
     final int axisCount = axis.limit();
 
-    mapButton(ImGuiNavInput.Activate,   0, buttons, buttonsCount, io);     // Cross / A
-    mapButton(ImGuiNavInput.Cancel,     1, buttons, buttonsCount, io);     // Circle / B
-    mapButton(ImGuiNavInput.Menu,       2, buttons, buttonsCount, io);     // Square / X
-    mapButton(ImGuiNavInput.Input,      3, buttons, buttonsCount, io);     // Triangle / Y
-    mapButton(ImGuiNavInput.DpadLeft,   13, buttons, buttonsCount, io);    // D-Pad Left
-    mapButton(ImGuiNavInput.DpadRight,  11, buttons, buttonsCount, io);    // D-Pad Right
-    mapButton(ImGuiNavInput.DpadUp,     10, buttons, buttonsCount, io);    // D-Pad Up
-    mapButton(ImGuiNavInput.DpadDown,   12, buttons, buttonsCount, io);    // D-Pad Down
-    mapButton(ImGuiNavInput.FocusPrev,  4, buttons, buttonsCount, io);     // L1 / LB
-    mapButton(ImGuiNavInput.FocusNext,  5, buttons, buttonsCount, io);     // R1 / RB
-    mapButton(ImGuiNavInput.TweakSlow,  4, buttons, buttonsCount, io);     // L1 / LB
-    mapButton(ImGuiNavInput.TweakFast,  5, buttons, buttonsCount, io);     // R1 / RB
-    mapAnalog(ImGuiNavInput.LStickLeft, 0,  -0.3f,  -0.9f, axis, axisCount, io);
-    mapAnalog(ImGuiNavInput.LStickRight,0,  +0.3f,  +0.9f, axis, axisCount, io);
-    mapAnalog(ImGuiNavInput.LStickUp,   1,  +0.3f,  +0.9f, axis, axisCount, io);
-    mapAnalog(ImGuiNavInput.LStickDown, 1,  -0.3f,  -0.9f, axis, axisCount, io);
+    mapButton(ImGuiNavInput.Activate, 0, buttons, buttonsCount, io);     // Cross / A
+    mapButton(ImGuiNavInput.Cancel, 1, buttons, buttonsCount, io);     // Circle / B
+    mapButton(ImGuiNavInput.Menu, 2, buttons, buttonsCount, io);     // Square / X
+    mapButton(ImGuiNavInput.Input, 3, buttons, buttonsCount, io);     // Triangle / Y
+    mapButton(ImGuiNavInput.DpadLeft, 13, buttons, buttonsCount, io);    // D-Pad Left
+    mapButton(ImGuiNavInput.DpadRight, 11, buttons, buttonsCount, io);    // D-Pad Right
+    mapButton(ImGuiNavInput.DpadUp, 10, buttons, buttonsCount, io);    // D-Pad Up
+    mapButton(ImGuiNavInput.DpadDown, 12, buttons, buttonsCount, io);    // D-Pad Down
+    mapButton(ImGuiNavInput.FocusPrev, 4, buttons, buttonsCount, io);     // L1 / LB
+    mapButton(ImGuiNavInput.FocusNext, 5, buttons, buttonsCount, io);     // R1 / RB
+    mapButton(ImGuiNavInput.TweakSlow, 4, buttons, buttonsCount, io);     // L1 / LB
+    mapButton(ImGuiNavInput.TweakFast, 5, buttons, buttonsCount, io);     // R1 / RB
+    mapAnalog(ImGuiNavInput.LStickLeft, 0, -0.3f, -0.9f, axis, axisCount, io);
+    mapAnalog(ImGuiNavInput.LStickRight, 0, +0.3f, +0.9f, axis, axisCount, io);
+    mapAnalog(ImGuiNavInput.LStickUp, 1, +0.3f, +0.9f, axis, axisCount, io);
+    mapAnalog(ImGuiNavInput.LStickDown, 1, -0.3f, -0.9f, axis, axisCount, io);
 
     if (axisCount > 0 && buttonsCount > 0) {
       io.setBackendFlags(io.getBackendFlags() | ImGuiBackendFlags.HasGamepad);
@@ -331,13 +330,15 @@ public class ImGuiImplGlfw {
     }
   }
 
-  private void mapButton(int navNo, int buttonNo, ByteBuffer buttons, int buttonsCount, ImGuiIO io) {
+  private void mapButton(int navNo, int buttonNo, ByteBuffer buttons, int buttonsCount,
+      ImGuiIO io) {
     if (buttonsCount > buttonNo && buttons.get(buttonNo) == GLFW_PRESS) {
       io.setNavInputs(navNo, 1.0f);
     }
-  };
+  }
 
-  private void mapAnalog(int navNo, int axisNo, float v0, float v1, FloatBuffer axis, int axisCount, ImGuiIO io) {
+  private void mapAnalog(int navNo, int axisNo, float v0, float v1, FloatBuffer axis, int axisCount,
+      ImGuiIO io) {
     float v = axisCount > axisNo ? axis.get(axisNo) : v0;
     v = (v - v0) / (v1 - v0);
     if (v > 1.0f) {

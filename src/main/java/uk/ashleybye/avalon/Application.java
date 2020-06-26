@@ -25,16 +25,16 @@ import uk.ashleybye.avalon.window.WindowProperties;
 
 public abstract class Application {
 
-  private static Application instance = null;
   private static final Logger logger = Logger.builder("AVALON", GREEN).build();
+  private static Application instance = null;
   private final LayerStack layers;
   private final ImGuiLayer imGuiLayer;
-  private boolean running = false;
   private final Window window;
   private final VertexArray triangleVertexArray;
   private final VertexArray squareVertexArray;
   private final Shader colourShader;
   private final Shader blueShader;
+  private boolean running = false;
 
   public Application() {
     instance = this;

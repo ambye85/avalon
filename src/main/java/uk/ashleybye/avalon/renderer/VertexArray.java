@@ -10,7 +10,7 @@ public interface VertexArray {
 
   void addVertexBuffer(VertexBuffer vertexBuffer);
 
-  void setIndexBuffer(IndexBuffer indexBuffer);
-
   IndexBuffer getIndexBuffer();
+
+  void setIndexBuffer(IndexBuffer indexBuffer);
 }

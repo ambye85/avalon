@@ -3,7 +3,6 @@ package uk.ashleybye.avalon.renderer;
 import static org.lwjgl.opengl.GL11C.GL_FALSE;
 import static org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20C.GL_INFO_LOG_LENGTH;
 import static org.lwjgl.opengl.GL20C.GL_LINK_STATUS;
 import static org.lwjgl.opengl.GL20C.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL20C.glAttachShader;

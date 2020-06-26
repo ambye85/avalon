@@ -26,7 +26,6 @@ import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
-import static org.lwjgl.opengl.GL.createCapabilities;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import org.lwjgl.glfw.GLFWCharCallback;
@@ -37,7 +36,6 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
-import uk.ashleybye.avalon.renderer.GraphicsContext;
 import uk.ashleybye.avalon.event.EventCallback;
 import uk.ashleybye.avalon.event.KeyPressedEvent;
 import uk.ashleybye.avalon.event.KeyReleasedEvent;
@@ -49,6 +47,7 @@ import uk.ashleybye.avalon.event.MouseScrolledEvent;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.event.WindowResizeEvent;
 import uk.ashleybye.avalon.platform.opengl.OpenGLContext;
+import uk.ashleybye.avalon.renderer.GraphicsContext;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
@@ -70,10 +69,6 @@ public class MacOSWindow implements Window {
   private int height;
   private boolean vSync;
   private GLFWErrorCallback errorCallback;
-
-  public static Window create(WindowProperties properties) {
-    return new MacOSWindow(properties);
-  }
 
   private MacOSWindow(WindowProperties properties) {
     title = properties.title();
@@ -181,28 +176,38 @@ public class MacOSWindow implements Window {
     glfwShowWindow(windowId);
   }
 
-  @Override public long getWindowId() {
+  public static Window create(WindowProperties properties) {
+    return new MacOSWindow(properties);
+  }
+
+  @Override
+  public long getWindowId() {
     return windowId;
   }
 
-  @Override public int getWidth() {
+  @Override
+  public int getWidth() {
     return width;
   }
 
-  @Override public int getHeight() {
+  @Override
+  public int getHeight() {
     return height;
   }
 
-  @Override public void onUpdate() {
+  @Override
+  public void onUpdate() {
     glfwPollEvents();
     context.swapBuffers();
   }
 
-  @Override public boolean isVSync() {
+  @Override
+  public boolean isVSync() {
     return vSync;
   }
 
-  @Override public void setVSync(boolean enabled) {
+  @Override
+  public void setVSync(boolean enabled) {
     if (enabled) {
       glfwSwapInterval(1);
     } else {
@@ -212,7 +217,8 @@ public class MacOSWindow implements Window {
     vSync = enabled;
   }
 
-  @Override public void dispose() {
+  @Override
+  public void dispose() {
     glfwDestroyWindow(windowId);
     windowSizeCallback.free();
     windowCloseCallback.free();
