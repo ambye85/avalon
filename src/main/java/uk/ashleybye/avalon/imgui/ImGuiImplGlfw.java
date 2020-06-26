@@ -1,4 +1,3 @@
-/* This is an implementation of https://github.com/ocornut/imgui/blob/master/examples/imgui_impl_glfw.cpp */
 package uk.ashleybye.avalon.imgui;
 
 import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
@@ -65,7 +64,6 @@ import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -79,36 +77,53 @@ import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiMouseCursor;
 import imgui.flag.ImGuiNavInput;
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import org.lwjgl.glfw.GLFWCharCallback;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
-import org.lwjgl.system.MemoryStack;
 
+/**
+ * This class is a straightforward port of the
+ * <a href="https://raw.githubusercontent.com/ocornut/imgui/v1.76/examples/imgui_impl_glfw.cpp">imgui_impl_glfw.cpp</a>.
+ * <p>
+ * It supports clipboard, gamepad, mouse and keyboard in the same way the original Dear ImGui code does. You can copy-paste this class in your codebase and
+ * modify the rendering routine in the way you'd like.
+ * <p>
+ */
 public class ImGuiImplGlfw {
 
-  private static final boolean[] mouseJustPressed = new boolean[ImGuiMouseButton.COUNT];
+  // Id of the current GLFW window
+  private long windowId;
+
+  // For application window properties
+  private final int[] winWidth = new int[1];
+  private final int[] winHeight = new int[1];
+  private final int[] fbWidth = new int[1];
+  private final int[] fbHeight = new int[1];
+
+  // Mouse cursors provided by GLFW
   private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
+
+  // For mouse tracking
+  private final boolean[] mouseJustPressed = new boolean[ImGuiMouseButton.COUNT];
+  private final double[] cursorPosX = new double[1];
+  private final double[] cursorPosY = new double[1];
+
+  // GLFW callbacks
   private GLFWMouseButtonCallback previousMouseButtonCallback = null;
   private GLFWScrollCallback previousScrollCallback = null;
   private GLFWKeyCallback previousKeyCallback = null;
   private GLFWCharCallback previousCharCallback = null;
-  private long windowId;
+
   private boolean callbacksInstalled;
   private double time = 0.0;
 
-  public static String getClipboardText(long windowId) {
-    return glfwGetClipboardString(windowId);
-  }
-
-  public static void setClipboardString(long windowId, String text) {
-    glfwSetClipboardString(windowId, text);
-  }
-
-  public void mouseButtonCallback(long windowId, int button, int action, int mods) {
+  /**
+   * Method to set the {@link GLFWMouseButtonCallback}.
+   */
+  public void mouseButtonCallback(final long windowId, final int button, final int action, final int mods) {
     if (previousMouseButtonCallback != null) {
       previousMouseButtonCallback.invoke(windowId, button, action, mods);
     }
@@ -118,22 +133,28 @@ public class ImGuiImplGlfw {
     }
   }
 
-  public void scrollCallback(long windowId, double xOffset, double yOffset) {
+  /**
+   * Method to set the {@link GLFWScrollCallback}.
+   */
+  public void scrollCallback(final long windowId, final double xOffset, final double yOffset) {
     if (previousScrollCallback != null) {
       previousScrollCallback.invoke(windowId, xOffset, yOffset);
     }
 
-    ImGuiIO io = ImGui.getIO();
+    final ImGuiIO io = ImGui.getIO();
     io.setMouseWheelH((float) xOffset);
     io.setMouseWheel((float) yOffset);
   }
 
-  public void keyCallback(long windowId, int key, int scancode, int action, int mods) {
+  /**
+   * Method to set the {@link GLFWKeyCallback}.
+   */
+  public void keyCallback(final long windowId, final int key, final int scancode, final int action, final int mods) {
     if (previousKeyCallback != null) {
       previousKeyCallback.invoke(windowId, key, scancode, action, mods);
     }
 
-    ImGuiIO io = ImGui.getIO();
+    final ImGuiIO io = ImGui.getIO();
     if (action == GLFW_PRESS) {
       io.setKeysDown(key, true);
     }
@@ -147,20 +168,28 @@ public class ImGuiImplGlfw {
     io.setKeySuper(io.getKeysDown(GLFW_KEY_LEFT_SUPER) || io.getKeysDown(GLFW_KEY_RIGHT_SUPER));
   }
 
-  public void charCallback(long windowId, int c) {
+  /**
+   * Method to set the {@link GLFWCharCallback}.
+   */
+  public void charCallback(final long windowId, final int c) {
     if (previousCharCallback != null) {
       previousCharCallback.invoke(windowId, c);
     }
 
-    ImGuiIO io = ImGui.getIO();
+    final ImGuiIO io = ImGui.getIO();
     io.addInputCharacter(c);
   }
 
-  public boolean init(long windowId, boolean installCallbacks) {
+  /**
+   * Method to do an initialization of the {@link ImGuiImplGlfw} state. It SHOULD be called before calling the {@link ImGuiImplGlfw#newFrame()} method.
+   * <p>
+   * Method takes two arguments, which should be a valid GLFW window pointer and a boolean indicating whether or not to install callbacks.
+   */
+  public boolean init(final long windowId, final boolean installCallbacks) {
     this.windowId = windowId;
     time = 0.0;
 
-    ImGuiIO io = ImGui.getIO();
+    final ImGuiIO io = ImGui.getIO();
 
     io.setBackendFlags(ImGuiBackendFlags.HasMouseCursors | ImGuiBackendFlags.HasSetMousePos);
     io.setBackendPlatformName("imgui_java_impl_glfw");
@@ -195,20 +224,20 @@ public class ImGuiImplGlfw {
     io.setGetClipboardTextFn(new ImStrSupplier() {
       @Override
       public String get() {
-        final String clipboardString = getClipboardText(windowId);
+        final String clipboardString = glfwGetClipboardString(windowId);
         return clipboardString != null ? clipboardString : "";
       }
     });
 
     io.setSetClipboardTextFn(new ImStrConsumer() {
       @Override
-      public void accept(String str) {
-        setClipboardString(windowId, str);
+      public void accept(final String str) {
+        glfwSetClipboardString(windowId, str);
       }
     });
 
     // Mouse cursors mapping. Disable errors whilst setting due to X11.
-    var prevErrorCallback = glfwSetErrorCallback(null);
+    final GLFWErrorCallback prevErrorCallback = glfwSetErrorCallback(null);
     mouseCursors[ImGuiMouseCursor.Arrow] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
     mouseCursors[ImGuiMouseCursor.TextInput] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
     mouseCursors[ImGuiMouseCursor.ResizeAll] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
@@ -220,10 +249,6 @@ public class ImGuiImplGlfw {
     mouseCursors[ImGuiMouseCursor.NotAllowed] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
     glfwSetErrorCallback(prevErrorCallback);
 
-    previousMouseButtonCallback = null;
-    previousScrollCallback = null;
-    previousKeyCallback = null;
-    previousCharCallback = null;
     if (installCallbacks) {
       callbacksInstalled = true;
       previousMouseButtonCallback = glfwSetMouseButtonCallback(windowId, this::mouseButtonCallback);
@@ -235,6 +260,9 @@ public class ImGuiImplGlfw {
     return true;
   }
 
+  /**
+   * Method to restore {@link org.lwjgl.glfw.GLFW} to it's state prior to calling method {@link ImGuiImplGlfw#init(long, boolean)}.
+   */
   public void shutdown() {
     if (callbacksInstalled) {
       glfwSetMouseButtonCallback(windowId, previousMouseButtonCallback);
@@ -244,39 +272,35 @@ public class ImGuiImplGlfw {
       callbacksInstalled = false;
     }
 
-    for (var i = 0; i < ImGuiMouseCursor.COUNT; i++) {
+    for (int i = 0; i < ImGuiMouseCursor.COUNT; i++) {
       glfwDestroyCursor(mouseCursors[i]);
-      mouseCursors[i] = 0;
     }
   }
 
-  public void updateMousePosAndButtons() {
-    ImGuiIO io = ImGui.getIO();
-    for (var i = 0; i < ImGuiMouseButton.COUNT; i++) {
+  private void updateMousePosAndButtons(final float scaleX, final float scaleY) {
+    final ImGuiIO io = ImGui.getIO();
+    for (int i = 0; i < ImGuiMouseButton.COUNT; i++) {
       io.setMouseDown(i, mouseJustPressed[i] || glfwGetMouseButton(windowId, i) != 0);
       mouseJustPressed[i] = false;
     }
 
-    var mousePosBackup = new ImVec2();
+    final ImVec2 mousePosBackup = new ImVec2();
     io.getMousePos(mousePosBackup);
     io.setMousePos(-Float.MAX_VALUE, -Float.MAX_VALUE);
-    var focused = glfwGetWindowAttrib(windowId, GLFW_FOCUSED) != 0;
+
+    final boolean focused = glfwGetWindowAttrib(windowId, GLFW_FOCUSED) != 0;
     if (focused) {
       if (io.getWantSetMousePos()) {
         glfwSetCursorPos(windowId, mousePosBackup.x, mousePosBackup.y);
       } else {
-        try (MemoryStack stack = stackPush()) {
-          DoubleBuffer xPos = stack.mallocDouble(1);
-          DoubleBuffer yPos = stack.mallocDouble(1);
-          glfwGetCursorPos(windowId, xPos, yPos);
-          io.setMousePos((float) xPos.get(), (float) yPos.get());
-        }
+        glfwGetCursorPos(windowId, cursorPosX, cursorPosY);
+        io.setMousePos((float) cursorPosX[0] * scaleX, (float) cursorPosY[0] * scaleY);
       }
     }
   }
 
-  public void updateMouseCursor() {
-    ImGuiIO io = ImGui.getIO();
+  private void updateMouseCursor() {
+    final ImGuiIO io = ImGui.getIO();
     final boolean noCursorChange = (io.getConfigFlags() & ImGuiConfigFlags.NoMouseCursorChange)
         == ImGuiConfigFlags.NoMouseCursorChange;
     final boolean cursorDisabled = glfwGetInputMode(windowId, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
@@ -284,7 +308,7 @@ public class ImGuiImplGlfw {
       return;
     }
 
-    int cursor = ImGui.getMouseCursor();
+    final int cursor = ImGui.getMouseCursor();
     if (cursor == ImGuiMouseCursor.None || io.getMouseDrawCursor()) {
       glfwSetInputMode(windowId, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     } else {
@@ -294,16 +318,20 @@ public class ImGuiImplGlfw {
     }
   }
 
-  public void updateGamepads() {
-    ImGuiIO io = ImGui.getIO();
+  private void updateGamepads() {
+    final ImGuiIO io = ImGui.getIO();
+
+    final float[] navInputs = new float[ImGuiNavInput.COUNT];
+    io.setNavInputs(navInputs);
+
     if ((io.getConfigFlags() & ImGuiConfigFlags.NavEnableGamepad) == 0) {
       return;
     }
 
-    ByteBuffer buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
+    final ByteBuffer buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
     final int buttonsCount = buttons.limit();
 
-    FloatBuffer axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
+    final FloatBuffer axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
     final int axisCount = axis.limit();
 
     mapButton(ImGuiNavInput.Activate, 0, buttons, buttonsCount, io);     // Cross / A
@@ -330,15 +358,21 @@ public class ImGuiImplGlfw {
     }
   }
 
-  private void mapButton(int navNo, int buttonNo, ByteBuffer buttons, int buttonsCount,
-      ImGuiIO io) {
+  private void mapButton(final int navNo, final int buttonNo, final ByteBuffer buttons, final int buttonsCount, final ImGuiIO io) {
     if (buttonsCount > buttonNo && buttons.get(buttonNo) == GLFW_PRESS) {
       io.setNavInputs(navNo, 1.0f);
     }
   }
 
-  private void mapAnalog(int navNo, int axisNo, float v0, float v1, FloatBuffer axis, int axisCount,
-      ImGuiIO io) {
+  private void mapAnalog(
+      final int navNo,
+      final int axisNo,
+      final float v0,
+      final float v1,
+      final FloatBuffer axis,
+      final int axisCount,
+      final ImGuiIO io
+  ) {
     float v = axisCount > axisNo ? axis.get(axisNo) : v0;
     v = (v - v0) / (v1 - v0);
     if (v > 1.0f) {
@@ -349,39 +383,31 @@ public class ImGuiImplGlfw {
     }
   }
 
+  /**
+   * Updates {@link ImGuiIO} and {@link org.lwjgl.glfw.GLFW} state.
+   */
   public void newFrame() {
-    ImGuiIO io = ImGui.getIO();
+    final ImGuiIO io = ImGui.getIO();
     if (!io.getFonts().isBuilt()) {
       throw new IllegalStateException(
-          "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer newFrame() function? e.g. ImGuiImplGl3.newFrame().");
+          "Font atlas not built! It is generally built by the renderer back-end. Missing call to renderer init() method? e.g. ImGuiImplGl3.init().");
     }
 
-    try (MemoryStack stack = stackPush()) {
-      IntBuffer w = stack.mallocInt(1);
-      IntBuffer h = stack.mallocInt(1);
-      glfwGetWindowSize(windowId, w, h);
-      float width = (float) w.get();
-      float height = (float) h.get();
+    glfwGetWindowSize(windowId, winWidth, winHeight);
+    glfwGetFramebufferSize(windowId, fbWidth, fbHeight);
 
-      IntBuffer displayW = stack.mallocInt(1);
-      IntBuffer displayH = stack.mallocInt(1);
-      glfwGetFramebufferSize(windowId, displayW, displayH);
-      float displayWidth = displayW.get();
-      float displayHeight = displayH.get();
+    final float scaleX = (float) fbWidth[0] / winWidth[0];
+    final float scaleY = (float) fbHeight[0] / winHeight[0];
 
-      io.setDisplaySize(width, height);
-      if (width > 0 && height > 0) {
-        io.setDisplayFramebufferScale(
-            displayWidth / width,
-            displayHeight / height
-        );
-      }
+    io.setDisplaySize((float) winWidth[0], (float) winHeight[0]);
+    if (winWidth[0] > 0 && winHeight[0] > 0) {
+      io.setDisplayFramebufferScale(scaleX, scaleY);
     }
 
-    double currentTime = glfwGetTime();
+    final double currentTime = glfwGetTime();
     io.setDeltaTime(time > 0.0 ? (float) (currentTime - time) : 1.0f / 60.0f);
 
-    updateMousePosAndButtons();
+    updateMousePosAndButtons(scaleX, scaleY);
     updateMouseCursor();
     updateGamepads();
   }

@@ -56,9 +56,6 @@ public class ImGuiLayer extends Layer {
   }
 
   public void end() {
-    ImGuiIO io = ImGui.getIO();
-    var app = Application.getInstance();
-    io.setDisplaySize((float) app.getWindow().getWidth(), (float) app.getWindow().getHeight());
     ImGui.render();
     imGuiGl3.render(ImGui.getDrawData());
   }
