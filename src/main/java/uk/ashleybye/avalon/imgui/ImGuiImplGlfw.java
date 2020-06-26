@@ -1,4 +1,4 @@
-/* Thisis an implementation of https://github.com/ocornut/imgui/blob/master/examples/imgui_impl_glfw.cpp */
+/* This is an implementation of https://github.com/ocornut/imgui/blob/master/examples/imgui_impl_glfw.cpp */
 package uk.ashleybye.avalon.imgui;
 
 import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
@@ -10,6 +10,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
 import static org.lwjgl.glfw.GLFW.GLFW_HAND_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_HRESIZE_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_IBEAM_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_JOYSTICK_1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_C;
@@ -49,6 +50,8 @@ import static org.lwjgl.glfw.GLFW.glfwGetClipboardString;
 import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwGetInputMode;
+import static org.lwjgl.glfw.GLFW.glfwGetJoystickAxes;
+import static org.lwjgl.glfw.GLFW.glfwGetJoystickButtons;
 import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
@@ -74,8 +77,12 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiMouseCursor;
+import imgui.flag.ImGuiNavInput;
+import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.function.BiFunction;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -289,28 +296,56 @@ public class ImGuiImplGlfw {
   }
 
   public void updateGamepads() {
-//    ImGuiIO io = ImGui.getIO();
-//    if ((io.getConfigFlags() & ImGuiConfigFlags.NavEnableGamepad) == 0) {
-//      return;
-//    }
-//
-//    ByteBuffer buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
-//    final int buttonsCount = buttons.limit();
-////    for (var i = 0; buttonsBuffer.hasRemaining(); i++) {
-////      buttons[i] = buttonsBuffer.get();
-////    }
-//
-//    FloatBuffer axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
-//    final int axisCount = axis.limit();
-////    for (var i = 0; axisBuffer.hasRemaining(); i++) {
-////      axis[i] = axisBuffer.get();
-////    }
-//
-//    var mapButton = (int navNo, int buttonNo) -> {
-//      if (buttonsCount > buttonNo && buttons.get(buttonNo) == GLFW_PRESS) {
-//        io.navInputs[navNo] = 1.0f;
-//      }
-//    };
+    ImGuiIO io = ImGui.getIO();
+    if ((io.getConfigFlags() & ImGuiConfigFlags.NavEnableGamepad) == 0) {
+      return;
+    }
+
+    ByteBuffer buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
+    final int buttonsCount = buttons.limit();
+
+    FloatBuffer axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
+    final int axisCount = axis.limit();
+
+    mapButton(ImGuiNavInput.Activate,   0, buttons, buttonsCount, io);     // Cross / A
+    mapButton(ImGuiNavInput.Cancel,     1, buttons, buttonsCount, io);     // Circle / B
+    mapButton(ImGuiNavInput.Menu,       2, buttons, buttonsCount, io);     // Square / X
+    mapButton(ImGuiNavInput.Input,      3, buttons, buttonsCount, io);     // Triangle / Y
+    mapButton(ImGuiNavInput.DpadLeft,   13, buttons, buttonsCount, io);    // D-Pad Left
+    mapButton(ImGuiNavInput.DpadRight,  11, buttons, buttonsCount, io);    // D-Pad Right
+    mapButton(ImGuiNavInput.DpadUp,     10, buttons, buttonsCount, io);    // D-Pad Up
+    mapButton(ImGuiNavInput.DpadDown,   12, buttons, buttonsCount, io);    // D-Pad Down
+    mapButton(ImGuiNavInput.FocusPrev,  4, buttons, buttonsCount, io);     // L1 / LB
+    mapButton(ImGuiNavInput.FocusNext,  5, buttons, buttonsCount, io);     // R1 / RB
+    mapButton(ImGuiNavInput.TweakSlow,  4, buttons, buttonsCount, io);     // L1 / LB
+    mapButton(ImGuiNavInput.TweakFast,  5, buttons, buttonsCount, io);     // R1 / RB
+    mapAnalog(ImGuiNavInput.LStickLeft, 0,  -0.3f,  -0.9f, axis, axisCount, io);
+    mapAnalog(ImGuiNavInput.LStickRight,0,  +0.3f,  +0.9f, axis, axisCount, io);
+    mapAnalog(ImGuiNavInput.LStickUp,   1,  +0.3f,  +0.9f, axis, axisCount, io);
+    mapAnalog(ImGuiNavInput.LStickDown, 1,  -0.3f,  -0.9f, axis, axisCount, io);
+
+    if (axisCount > 0 && buttonsCount > 0) {
+      io.setBackendFlags(io.getBackendFlags() | ImGuiBackendFlags.HasGamepad);
+    } else {
+      io.setBackendFlags(io.getBackendFlags() & ~ImGuiBackendFlags.HasGamepad);
+    }
+  }
+
+  private void mapButton(int navNo, int buttonNo, ByteBuffer buttons, int buttonsCount, ImGuiIO io) {
+    if (buttonsCount > buttonNo && buttons.get(buttonNo) == GLFW_PRESS) {
+      io.setNavInputs(navNo, 1.0f);
+    }
+  };
+
+  private void mapAnalog(int navNo, int axisNo, float v0, float v1, FloatBuffer axis, int axisCount, ImGuiIO io) {
+    float v = axisCount > axisNo ? axis.get(axisNo) : v0;
+    v = (v - v0) / (v1 - v0);
+    if (v > 1.0f) {
+      v = 1.0f;
+    }
+    if (io.getNavInputs(navNo) < v) {
+      io.setNavInputs(navNo, v);
+    }
   }
 
   public void newFrame() {

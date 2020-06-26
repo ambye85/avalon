@@ -15,7 +15,7 @@ repositories {
 
 ext {
     lwjglVersion = "3.2.3"
-    imguiVersion = "1.76-0.13"
+    imguiVersion = "1.76-0.14"
     natives = "natives-macos"
 }
 
