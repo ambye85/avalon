@@ -3,7 +3,6 @@ package uk.ashleybye.avalon.imgui;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiConfigFlags;
-import imgui.type.ImBoolean;
 import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
 import uk.ashleybye.avalon.event.Event;
@@ -66,8 +65,8 @@ public class ImGuiLayer extends Layer {
 
   @Override
   public void onImGuiRender() {
-    ImBoolean show = new ImBoolean(true);
-    ImGui.showDemoWindow(show);
+//    ImBoolean show = new ImBoolean(true);
+//    ImGui.showDemoWindow(show);
   }
 
 /*********************************************************************/

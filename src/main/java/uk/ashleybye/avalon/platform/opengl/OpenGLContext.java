@@ -22,9 +22,9 @@ public class OpenGLContext implements GraphicsContext {
     createCapabilities();
 
     System.out.println("OpenGL info:");
-    System.out.println("  Vendor:  " + glGetString(GL_VENDOR));
-    System.out.println("  Renderer:" + glGetString(GL_VENDOR));
-    System.out.println("  Version: " + glGetString(GL_VENDOR));
+    System.out.println("  Vendor:   " + glGetString(GL_VENDOR));
+    System.out.println("  Renderer: " + glGetString(GL_VENDOR));
+    System.out.println("  Version:  " + glGetString(GL_VENDOR));
   }
 
   @Override

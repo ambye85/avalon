@@ -6,10 +6,6 @@ import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL11C.glDrawElements;
-import static org.lwjgl.opengl.GL20C.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20C.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30C.glBindVertexArray;
-import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
 import static uk.ashleybye.avalon.Logger.Color.GREEN;
 
 import uk.ashleybye.avalon.event.Event;
@@ -18,12 +14,12 @@ import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
 import uk.ashleybye.avalon.platform.macos.MacOSWindow;
 import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
+import uk.ashleybye.avalon.platform.opengl.OpenGLVertexArray;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.BufferLayout;
-import uk.ashleybye.avalon.renderer.IndexBuffer;
 import uk.ashleybye.avalon.renderer.Shader;
 import uk.ashleybye.avalon.renderer.ShaderDataType;
-import uk.ashleybye.avalon.renderer.VertexBuffer;
+import uk.ashleybye.avalon.renderer.VertexArray;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
@@ -35,10 +31,10 @@ public abstract class Application {
   private final ImGuiLayer imGuiLayer;
   private boolean running = false;
   private final Window window;
-  private final int vertexArray;
-  private final VertexBuffer vertexBuffer;
-  private final IndexBuffer indexBuffer;
-  private Shader shader;
+  private final VertexArray triangleVertexArray;
+  private final VertexArray squareVertexArray;
+  private final Shader colourShader;
+  private final Shader blueShader;
 
   public Application() {
     instance = this;
@@ -50,66 +46,93 @@ public abstract class Application {
     imGuiLayer = new ImGuiLayer();
     pushOverlay(imGuiLayer);
 
-    vertexArray = glGenVertexArrays();
-    glBindVertexArray(vertexArray);
-
-    float[] vertices = new float[]{
+    float[] triangleVertices = new float[]{
         -0.5F, -0.5F, 0.0F, 0.8F, 0.2F, 0.8F, 1.0F,
         +0.5F, -0.5F, 0.0F, 0.2F, 0.3F, 0.8F, 1.0F,
         +0.0F, +0.5F, 0.0F, 0.8F, 0.8F, 0.2F, 1.0F,
     };
 
-    {
-      BufferLayout layout = BufferLayout.builder()
-          .addElement(ShaderDataType.FLOAT_3, "a_Position")
-          .addElement(ShaderDataType.FLOAT_4, "a_Color")
-          .build();
-      vertexBuffer = new OpenGLVertexBuffer(vertices);
-      vertexBuffer.setLayout(layout);
-    }
+    triangleVertexArray = new OpenGLVertexArray();
+    BufferLayout triangleLayout = BufferLayout.builder()
+        .addElement(ShaderDataType.FLOAT_3, "a_Position")
+        .addElement(ShaderDataType.FLOAT_4, "a_Color")
+        .build();
+    var triangleVertexBuffer = new OpenGLVertexBuffer(triangleVertices);
+    triangleVertexBuffer.setLayout(triangleLayout);
+    triangleVertexArray.addVertexBuffer(triangleVertexBuffer);
 
-    int index = 0;
-    final BufferLayout layout = vertexBuffer.getLayout();
-    for (var element : layout) {
-      glEnableVertexAttribArray(index);
-      glVertexAttribPointer(index, element.getComponentCount(), element.toOpenGLBaseType(),
-          element.normalised(), layout.getStride(), element.offset());
-      index++;
-//    glEnableVertexAttribArray(1);
-//    glVertexAttribPointer(1, 4, GL_FLOAT, false, 7 * Float.BYTES,
-//        Float.BYTES * 3);
-    }
+    int[] triangleIndices = new int[]{0, 1, 2};
+    var triangleIndexBuffer = new OpenGLIndexBuffer(triangleIndices);
+    triangleVertexArray.setIndexBuffer(triangleIndexBuffer);
 
-    int[] indices = new int[]{0, 1, 2};
-    indexBuffer = new OpenGLIndexBuffer(indices);
+    float[] squareVertices = new float[]{
+        -0.75F, -0.75F, 0.0F,
+        +0.75F, -0.75F, 0.0F,
+        +0.75F, +0.75F, 0.0F,
+        -0.75F, +0.75F, 0.0F,
+    };
 
-    String vertexSource = """
+    squareVertexArray = new OpenGLVertexArray();
+    BufferLayout squareLayout = BufferLayout.builder()
+        .addElement(ShaderDataType.FLOAT_3, "a_Position")
+        .build();
+    var squareVertexBuffer = new OpenGLVertexBuffer(squareVertices);
+    squareVertexBuffer.setLayout(squareLayout);
+    squareVertexArray.addVertexBuffer(squareVertexBuffer);
+
+    int[] squareIndices = new int[]{0, 1, 2, 2, 3, 0};
+    var squareIndexBuffer = new OpenGLIndexBuffer(squareIndices);
+    squareVertexArray.setIndexBuffer(squareIndexBuffer);
+
+    String colourVertexSource = """
         #version 330 core
-              
+
         layout(location = 0) in vec3 a_Position;
         layout(location = 1) in vec4 a_Color;
-              
+
         out vec4 v_Color;
-              
+
         void main()
         {
           v_Color = a_Color;
           gl_Position = vec4(a_Position, 1.0);
         }""";
 
-    String fragmentSource = """
+    String colourFragmentSource = """
         #version 330 core
-              
+
         in vec4 v_Color;
-              
+
         out vec4 color;
-              
+
         void main()
         {
-        color = v_Color;
+          color = v_Color;
         }""";
 
-    shader = new Shader(vertexSource, fragmentSource);
+    colourShader = new Shader(colourVertexSource, colourFragmentSource);
+
+    String blueVertexSource = """
+        #version 330 core
+
+        layout(location = 0) in vec3 a_Position;
+
+        void main()
+        {
+          gl_Position = vec4(a_Position, 1.0);
+        }""";
+
+    String blueFragmentSource = """
+        #version 330 core
+
+        out vec4 color;
+
+        void main()
+        {
+          color = vec4(0.2, 0.3, 0.8, 1.0);
+        }""";
+
+    blueShader = new Shader(blueVertexSource, blueFragmentSource);
   }
 
   public static Application getInstance() {
@@ -126,10 +149,18 @@ public abstract class Application {
       glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
       glClear(GL_COLOR_BUFFER_BIT);
 
-      shader.bind();
-      glBindVertexArray(vertexArray);
-      glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, 0L);
-      shader.unbind();
+      blueShader.bind();
+      squareVertexArray.bind();
+      glDrawElements(GL_TRIANGLES, squareVertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT,
+          0L);
+      squareVertexArray.unbind();
+      blueShader.unbind();
+      colourShader.bind();
+      triangleVertexArray.bind();
+      glDrawElements(GL_TRIANGLES, triangleVertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT,
+          0L);
+      triangleVertexArray.unbind();
+      colourShader.unbind();
 
       for (var layer : layers) {
         layer.onUpdate();
@@ -144,9 +175,8 @@ public abstract class Application {
       window.onUpdate();
     }
 
-    shader.dispose();
-    indexBuffer.dispose();
-    vertexBuffer.dispose();
+    colourShader.dispose();
+    triangleVertexArray.dispose();
     popOverlay(imGuiLayer);
     window.dispose();
   }
