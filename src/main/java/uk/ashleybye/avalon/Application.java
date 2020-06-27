@@ -1,11 +1,5 @@
 package uk.ashleybye.avalon;
 
-import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11C.glClear;
-import static org.lwjgl.opengl.GL11C.glClearColor;
-import static org.lwjgl.opengl.GL11C.glDrawElements;
 import static uk.ashleybye.avalon.Logger.Color.GREEN;
 
 import uk.ashleybye.avalon.event.Event;
@@ -17,6 +11,8 @@ import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexArray;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.BufferLayout;
+import uk.ashleybye.avalon.renderer.RenderCommand;
+import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.renderer.Shader;
 import uk.ashleybye.avalon.renderer.ShaderDataType;
 import uk.ashleybye.avalon.renderer.VertexArray;
@@ -146,21 +142,17 @@ public abstract class Application {
   public final void run() {
     running = true;
     while (running) {
-      glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
-      glClear(GL_COLOR_BUFFER_BIT);
+      RenderCommand.setClearColor(0.1F, 0.1F, 0.1F, 1.0F);
+      RenderCommand.clear();
 
+      Renderer.beginScene();
       blueShader.bind();
-      squareVertexArray.bind();
-      glDrawElements(GL_TRIANGLES, squareVertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT,
-          0L);
-      squareVertexArray.unbind();
+      Renderer.submit(squareVertexArray);
       blueShader.unbind();
       colourShader.bind();
-      triangleVertexArray.bind();
-      glDrawElements(GL_TRIANGLES, triangleVertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT,
-          0L);
-      triangleVertexArray.unbind();
+      Renderer.submit(triangleVertexArray);
       colourShader.unbind();
+      Renderer.endScene();
 
       for (var layer : layers) {
         layer.onUpdate();

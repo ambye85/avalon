@@ -1,6 +1,10 @@
 package uk.ashleybye.avalon.renderer;
 
-public enum RendererAPI {
-  NONE,
-  OPEN_GL,
+public interface RendererAPI {
+
+  void setClearColor(float r, float g, float b, float a);
+
+  void clear();
+
+  void drawIndexed(VertexArray vertexArray);
 }
