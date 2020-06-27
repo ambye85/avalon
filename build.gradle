@@ -29,6 +29,7 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "io.imgui.java:binding:$imguiVersion"
     implementation "io.imgui.java:lwjgl3:$imguiVersion"
+    implementation "org.joml:joml:1.9.25"
 
     runtimeOnly "org.lwjgl:lwjgl::$natives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$natives"

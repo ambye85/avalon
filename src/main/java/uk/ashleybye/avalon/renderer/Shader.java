@@ -16,13 +16,18 @@ import static org.lwjgl.opengl.GL20C.glGetProgramInfoLog;
 import static org.lwjgl.opengl.GL20C.glGetProgrami;
 import static org.lwjgl.opengl.GL20C.glGetShaderInfoLog;
 import static org.lwjgl.opengl.GL20C.glGetShaderi;
+import static org.lwjgl.opengl.GL20C.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20C.glLinkProgram;
 import static org.lwjgl.opengl.GL20C.glShaderSource;
+import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20C.glUseProgram;
+
+import org.joml.Matrix4f;
 
 public class Shader {
 
   private final int programId;
+  private final float[] uniformMatrix4f = new float[16];
 
   public Shader(String vertexSource, String fragmentSource) {
     int vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
@@ -84,6 +89,11 @@ public class Shader {
 
   public void unbind() {
     glUseProgram(0);
+  }
+
+  public void uploadUniform(String name, Matrix4f matrix) {
+    int location = glGetUniformLocation(programId, name);
+    glUniformMatrix4fv(location, false, matrix.get(uniformMatrix4f));
   }
 
   public void dispose() {

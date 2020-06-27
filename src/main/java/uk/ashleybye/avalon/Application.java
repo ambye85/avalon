@@ -11,6 +11,7 @@ import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexArray;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.BufferLayout;
+import uk.ashleybye.avalon.renderer.OrthographicCamera;
 import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.renderer.Shader;
@@ -31,6 +32,7 @@ public abstract class Application {
   private final Shader colourShader;
   private final Shader blueShader;
   private boolean running = false;
+  private OrthographicCamera camera;
 
   public Application() {
     instance = this;
@@ -85,13 +87,15 @@ public abstract class Application {
 
         layout(location = 0) in vec3 a_Position;
         layout(location = 1) in vec4 a_Color;
+        
+        uniform mat4 u_ViewProjection;
 
         out vec4 v_Color;
 
         void main()
         {
           v_Color = a_Color;
-          gl_Position = vec4(a_Position, 1.0);
+          gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }""";
 
     String colourFragmentSource = """
@@ -112,10 +116,12 @@ public abstract class Application {
         #version 330 core
 
         layout(location = 0) in vec3 a_Position;
+        
+        uniform mat4 u_ViewProjection;
 
         void main()
         {
-          gl_Position = vec4(a_Position, 1.0);
+          gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }""";
 
     String blueFragmentSource = """
@@ -129,6 +135,8 @@ public abstract class Application {
         }""";
 
     blueShader = new Shader(blueVertexSource, blueFragmentSource);
+
+    camera = new OrthographicCamera(-1.6F, 1.6F, -0.9F, 0.9F);
   }
 
   public static Application getInstance() {
@@ -145,13 +153,12 @@ public abstract class Application {
       RenderCommand.setClearColor(0.1F, 0.1F, 0.1F, 1.0F);
       RenderCommand.clear();
 
-      Renderer.beginScene();
-      blueShader.bind();
-      Renderer.submit(squareVertexArray);
-      blueShader.unbind();
-      colourShader.bind();
-      Renderer.submit(triangleVertexArray);
-      colourShader.unbind();
+      camera.setPosition(0.5F, 0.5F, 0.0F);
+      camera.setRotation(45);
+
+      Renderer.beginScene(camera);
+      Renderer.submit(blueShader, squareVertexArray);
+      Renderer.submit(colourShader, triangleVertexArray);
       Renderer.endScene();
 
       for (var layer : layers) {
