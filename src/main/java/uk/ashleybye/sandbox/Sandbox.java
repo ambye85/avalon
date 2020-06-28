@@ -1,6 +1,7 @@
 package uk.ashleybye.sandbox;
 
 import imgui.ImGui;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
@@ -41,6 +42,8 @@ class ExampleLayer extends Layer {
   private float cameraRotation;
   private final float cameraMovementSpeed = 5.0F;
   private final float cameraRotationSpeed = 180.0F;
+  private final Vector3f squarePosition;
+  private final Matrix4f squareScale;
 
   public ExampleLayer() {
     super("Example Layer");
@@ -65,10 +68,10 @@ class ExampleLayer extends Layer {
     triangleVertexArray.setIndexBuffer(triangleIndexBuffer);
 
     float[] squareVertices = new float[]{
-        -0.75F, -0.75F, 0.0F,
-        +0.75F, -0.75F, 0.0F,
-        +0.75F, +0.75F, 0.0F,
-        -0.75F, +0.75F, 0.0F,
+        -0.5F, -0.5F, 0.0F,
+        +0.5F, -0.5F, 0.0F,
+        +0.5F, +0.5F, 0.0F,
+        -0.5F, +0.5F, 0.0F,
     };
 
     squareVertexArray = new OpenGLVertexArray();
@@ -90,13 +93,14 @@ class ExampleLayer extends Layer {
         layout(location = 1) in vec4 a_Color;
                 
         uniform mat4 u_ViewProjection;
+        uniform mat4 u_Transform;
 
         out vec4 v_Color;
 
         void main()
         {
           v_Color = a_Color;
-          gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+          gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
         }""";
 
     String colourFragmentSource = """
@@ -119,10 +123,11 @@ class ExampleLayer extends Layer {
         layout(location = 0) in vec3 a_Position;
                 
         uniform mat4 u_ViewProjection;
+        uniform mat4 u_Transform;
 
         void main()
         {
-          gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+          gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
         }""";
 
     String blueFragmentSource = """
@@ -142,28 +147,30 @@ class ExampleLayer extends Layer {
     camera = new OrthographicCamera(-1.6F, 1.6F, -0.9F, 0.9F);
     camera.setPosition(cameraPosition);
     camera.setRotation(cameraRotation);
+
+    squarePosition = new Vector3f();
+    squareScale = new Matrix4f().scale(0.1F);
   }
 
   @Override
   public void onUpdate(float dt) {
-
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_UP)) {
-      cameraPosition.y -= cameraMovementSpeed * (float) dt;
+      cameraPosition.y += cameraMovementSpeed * dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_DOWN)) {
-      cameraPosition.y += cameraMovementSpeed * (float) dt;
+      cameraPosition.y -= cameraMovementSpeed * dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_LEFT)) {
-      cameraPosition.x += cameraMovementSpeed * (float) dt;
+      cameraPosition.x -= cameraMovementSpeed * dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_RIGHT)) {
-      cameraPosition.x -= cameraMovementSpeed * (float) dt;
+      cameraPosition.x += cameraMovementSpeed * dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_A)) {
-      cameraRotation += cameraRotationSpeed * (float) dt;
+      cameraRotation += cameraRotationSpeed * dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_D)) {
-      cameraRotation -= cameraRotationSpeed * (float) dt;
+      cameraRotation -= cameraRotationSpeed * dt;
     }
     camera.setPosition(cameraPosition);
     camera.setRotation(cameraRotation);
@@ -172,16 +179,25 @@ class ExampleLayer extends Layer {
     RenderCommand.clear();
 
     Renderer.beginScene(camera);
-    Renderer.submit(blueShader, squareVertexArray);
+
+    for (int y = 0; y < 20; y++) {
+      for (int x = 0; x < 20; x++) {
+        squarePosition.x = x * 0.11F;
+        squarePosition.y = y * 0.11F;
+        Matrix4f transform = new Matrix4f().translate(squarePosition).mul(squareScale);
+        Renderer.submit(blueShader, squareVertexArray, transform);
+      }
+    }
+
     Renderer.submit(colourShader, triangleVertexArray);
     Renderer.endScene();
   }
 
   @Override
   public void onImGuiRender() {
-    ImGui.begin("test");
-    ImGui.text("Hello, world!");
-    ImGui.end();
+//    ImGui.begin("test");
+//    ImGui.text("Hello, world!");
+//    ImGui.end();
   }
 
   @Override

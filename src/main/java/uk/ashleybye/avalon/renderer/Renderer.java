@@ -20,8 +20,13 @@ public class Renderer {
   }
 
   public static void submit(Shader shader, VertexArray vertexArray) {
+    submit(shader, vertexArray, new Matrix4f());
+  }
+
+  public static void submit(Shader shader, VertexArray vertexArray, Matrix4f transform) {
     shader.bind();
     shader.uploadUniform("u_ViewProjection", viewProjectionMatrix);
+    shader.uploadUniform("u_Transform", transform);
 
     vertexArray.bind();
 
