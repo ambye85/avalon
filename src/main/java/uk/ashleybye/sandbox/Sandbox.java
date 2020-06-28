@@ -8,6 +8,7 @@ import uk.ashleybye.avalon.Layer;
 import uk.ashleybye.avalon.input.Input;
 import uk.ashleybye.avalon.input.KeyCodes;
 import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
+import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexArray;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.BufferLayout;
@@ -36,7 +37,7 @@ class ExampleLayer extends Layer {
   private final VertexArray triangleVertexArray;
   private final VertexArray squareVertexArray;
   private final Shader colourShader;
-  private final Shader blueShader;
+  private final Shader flatColorShader;
   private final OrthographicCamera camera;
   private final Vector3f cameraPosition;
   private float cameraRotation;
@@ -44,6 +45,7 @@ class ExampleLayer extends Layer {
   private final float cameraRotationSpeed = 180.0F;
   private final Vector3f squarePosition;
   private final Matrix4f squareScale;
+  private final float[] squareColor = new float[] {0.2F, 0.3F, 0.8F};
 
   public ExampleLayer() {
     super("Example Layer");
@@ -115,9 +117,9 @@ class ExampleLayer extends Layer {
           color = v_Color;
         }""";
 
-    colourShader = new Shader(colourVertexSource, colourFragmentSource);
+    colourShader = new OpenGLShader(colourVertexSource, colourFragmentSource);
 
-    String blueVertexSource = """
+    String flatColorVertexSource = """
         #version 330 core
 
         layout(location = 0) in vec3 a_Position;
@@ -130,17 +132,19 @@ class ExampleLayer extends Layer {
           gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
         }""";
 
-    String blueFragmentSource = """
+    String flatColorFragmentSource = """
         #version 330 core
 
         out vec4 color;
+                
+        uniform vec3 u_Color;
 
         void main()
         {
-          color = vec4(0.2, 0.3, 0.8, 1.0);
+          color = vec4(u_Color, 1.0);
         }""";
 
-    blueShader = new Shader(blueVertexSource, blueFragmentSource);
+    flatColorShader = new OpenGLShader(flatColorVertexSource, flatColorFragmentSource);
 
     cameraPosition = new Vector3f(0.0F, 0.0F, 0.0F);
     cameraRotation = 0.0F;
@@ -180,12 +184,15 @@ class ExampleLayer extends Layer {
 
     Renderer.beginScene(camera);
 
+    flatColorShader.bind();
+    ((OpenGLShader) flatColorShader).uploadUniform("u_Color", new Vector3f(squareColor));
+
     for (int y = 0; y < 20; y++) {
       for (int x = 0; x < 20; x++) {
         squarePosition.x = x * 0.11F;
         squarePosition.y = y * 0.11F;
         Matrix4f transform = new Matrix4f().translate(squarePosition).mul(squareScale);
-        Renderer.submit(blueShader, squareVertexArray, transform);
+        Renderer.submit(flatColorShader, squareVertexArray, transform);
       }
     }
 
@@ -198,11 +205,14 @@ class ExampleLayer extends Layer {
 //    ImGui.begin("test");
 //    ImGui.text("Hello, world!");
 //    ImGui.end();
+    ImGui.begin("Settings");
+    ImGui.colorEdit3("Square Color", squareColor);
+    ImGui.end();
   }
 
   @Override
   public void onDetach() {
-    blueShader.dispose();
+    flatColorShader.dispose();
     colourShader.dispose();
     squareVertexArray.dispose();
     triangleVertexArray.dispose();
