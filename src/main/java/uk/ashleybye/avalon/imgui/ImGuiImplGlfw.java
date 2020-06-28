@@ -88,29 +88,26 @@ import org.lwjgl.glfw.GLFWScrollCallback;
  * This class is a straightforward port of the
  * <a href="https://raw.githubusercontent.com/ocornut/imgui/v1.76/examples/imgui_impl_glfw.cpp">imgui_impl_glfw.cpp</a>.
  * <p>
- * It supports clipboard, gamepad, mouse and keyboard in the same way the original Dear ImGui code does. You can copy-paste this class in your codebase and
- * modify the rendering routine in the way you'd like.
+ * It supports clipboard, gamepad, mouse and keyboard in the same way the original Dear ImGui code
+ * does. You can copy-paste this class in your codebase and modify the rendering routine in the way
+ * you'd like.
  * <p>
  */
 public class ImGuiImplGlfw {
-
-  // Id of the current GLFW window
-  private long windowId;
 
   // For application window properties
   private final int[] winWidth = new int[1];
   private final int[] winHeight = new int[1];
   private final int[] fbWidth = new int[1];
   private final int[] fbHeight = new int[1];
-
   // Mouse cursors provided by GLFW
   private final long[] mouseCursors = new long[ImGuiMouseCursor.COUNT];
-
   // For mouse tracking
   private final boolean[] mouseJustPressed = new boolean[ImGuiMouseButton.COUNT];
   private final double[] cursorPosX = new double[1];
   private final double[] cursorPosY = new double[1];
-
+  // Id of the current GLFW window
+  private long windowId;
   // GLFW callbacks
   private GLFWMouseButtonCallback previousMouseButtonCallback = null;
   private GLFWScrollCallback previousScrollCallback = null;
@@ -123,7 +120,8 @@ public class ImGuiImplGlfw {
   /**
    * Method to set the {@link GLFWMouseButtonCallback}.
    */
-  public void mouseButtonCallback(final long windowId, final int button, final int action, final int mods) {
+  public void mouseButtonCallback(final long windowId, final int button, final int action,
+      final int mods) {
     if (previousMouseButtonCallback != null) {
       previousMouseButtonCallback.invoke(windowId, button, action, mods);
     }
@@ -149,7 +147,8 @@ public class ImGuiImplGlfw {
   /**
    * Method to set the {@link GLFWKeyCallback}.
    */
-  public void keyCallback(final long windowId, final int key, final int scancode, final int action, final int mods) {
+  public void keyCallback(final long windowId, final int key, final int scancode, final int action,
+      final int mods) {
     if (previousKeyCallback != null) {
       previousKeyCallback.invoke(windowId, key, scancode, action, mods);
     }
@@ -181,9 +180,11 @@ public class ImGuiImplGlfw {
   }
 
   /**
-   * Method to do an initialization of the {@link ImGuiImplGlfw} state. It SHOULD be called before calling the {@link ImGuiImplGlfw#newFrame()} method.
+   * Method to do an initialization of the {@link ImGuiImplGlfw} state. It SHOULD be called before
+   * calling the {@link ImGuiImplGlfw#newFrame()} method.
    * <p>
-   * Method takes two arguments, which should be a valid GLFW window pointer and a boolean indicating whether or not to install callbacks.
+   * Method takes two arguments, which should be a valid GLFW window pointer and a boolean
+   * indicating whether or not to install callbacks.
    */
   public boolean init(final long windowId, final boolean installCallbacks) {
     this.windowId = windowId;
@@ -261,7 +262,8 @@ public class ImGuiImplGlfw {
   }
 
   /**
-   * Method to restore {@link org.lwjgl.glfw.GLFW} to it's state prior to calling method {@link ImGuiImplGlfw#init(long, boolean)}.
+   * Method to restore {@link org.lwjgl.glfw.GLFW} to it's state prior to calling method {@link
+   * ImGuiImplGlfw#init(long, boolean)}.
    */
   public void shutdown() {
     if (callbacksInstalled) {
@@ -358,7 +360,8 @@ public class ImGuiImplGlfw {
     }
   }
 
-  private void mapButton(final int navNo, final int buttonNo, final ByteBuffer buttons, final int buttonsCount, final ImGuiIO io) {
+  private void mapButton(final int navNo, final int buttonNo, final ByteBuffer buttons,
+      final int buttonsCount, final ImGuiIO io) {
     if (buttonsCount > buttonNo && buttons.get(buttonNo) == GLFW_PRESS) {
       io.setNavInputs(navNo, 1.0f);
     }

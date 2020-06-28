@@ -88,15 +88,18 @@ public class OpenGLShader implements Shader {
     return programId;
   }
 
-  @Override public void bind() {
+  @Override
+  public void bind() {
     glUseProgram(programId);
   }
 
-  @Override public void unbind() {
+  @Override
+  public void unbind() {
     glUseProgram(0);
   }
 
-  @Override public void dispose() {
+  @Override
+  public void dispose() {
     glDeleteProgram(programId);
   }
 

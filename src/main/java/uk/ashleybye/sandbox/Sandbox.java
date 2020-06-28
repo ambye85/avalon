@@ -40,12 +40,12 @@ class ExampleLayer extends Layer {
   private final Shader flatColorShader;
   private final OrthographicCamera camera;
   private final Vector3f cameraPosition;
-  private float cameraRotation;
   private final float cameraMovementSpeed = 5.0F;
   private final float cameraRotationSpeed = 180.0F;
   private final Vector3f squarePosition;
   private final Matrix4f squareScale;
-  private final float[] squareColor = new float[] {0.2F, 0.3F, 0.8F};
+  private final float[] squareColor = new float[]{0.2F, 0.3F, 0.8F};
+  private float cameraRotation;
 
   public ExampleLayer() {
     super("Example Layer");

@@ -6,9 +6,9 @@ import org.joml.Vector3f;
 
 public class OrthographicCamera {
 
-  private Matrix4f projectionMatrix;
+  private final Matrix4f projectionMatrix;
   private Matrix4f viewMatrix;
-  private Matrix4f viewProjectionMatrix;
+  private final Matrix4f viewProjectionMatrix;
   private Vector3f position;
   private float rotation;
 

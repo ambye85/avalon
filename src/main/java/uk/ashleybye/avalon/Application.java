@@ -19,8 +19,8 @@ public abstract class Application {
   private final LayerStack layers;
   private final ImGuiLayer imGuiLayer;
   private final Window window;
-  private boolean running = false;
   private final Timer timer;
+  private boolean running = false;
 
   public Application() {
     instance = this;
