@@ -39,8 +39,8 @@ class ExampleLayer extends Layer {
   private final OrthographicCamera camera;
   private final Vector3f cameraPosition;
   private float cameraRotation;
-  private final float cameraMovementSpeed = 0.1f;
-  private final float cameraRotationSpeed = 2.0f;
+  private final float cameraMovementSpeed = 5.0F;
+  private final float cameraRotationSpeed = 180.0F;
 
   public ExampleLayer() {
     super("Example Layer");
@@ -145,25 +145,25 @@ class ExampleLayer extends Layer {
   }
 
   @Override
-  public void onUpdate() {
+  public void onUpdate(float dt) {
 
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_UP)) {
-      cameraPosition.y -= cameraMovementSpeed;
+      cameraPosition.y -= cameraMovementSpeed * (float) dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_DOWN)) {
-      cameraPosition.y += cameraMovementSpeed;
+      cameraPosition.y += cameraMovementSpeed * (float) dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_LEFT)) {
-      cameraPosition.x += cameraMovementSpeed;
+      cameraPosition.x += cameraMovementSpeed * (float) dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_RIGHT)) {
-      cameraPosition.x -= cameraMovementSpeed;
+      cameraPosition.x -= cameraMovementSpeed * (float) dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_A)) {
-      cameraRotation += cameraRotationSpeed;
+      cameraRotation += cameraRotationSpeed * (float) dt;
     }
     if (Input.isKeyPressed(KeyCodes.AVALON_KEY_D)) {
-      cameraRotation -= cameraRotationSpeed;
+      cameraRotation -= cameraRotationSpeed * (float) dt;
     }
     camera.setPosition(cameraPosition);
     camera.setRotation(cameraRotation);

@@ -6,7 +6,9 @@ import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
+import uk.ashleybye.avalon.platform.macos.MacOSTimer;
 import uk.ashleybye.avalon.platform.macos.MacOSWindow;
+import uk.ashleybye.avalon.time.Timer;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
@@ -18,6 +20,7 @@ public abstract class Application {
   private final ImGuiLayer imGuiLayer;
   private final Window window;
   private boolean running = false;
+  private final Timer timer;
 
   public Application() {
     instance = this;
@@ -28,6 +31,8 @@ public abstract class Application {
 
     imGuiLayer = new ImGuiLayer();
     pushOverlay(imGuiLayer);
+
+    timer = new MacOSTimer();
   }
 
   public static Application getInstance() {
@@ -39,10 +44,15 @@ public abstract class Application {
   }
 
   public final void run() {
+    timer.start();
     running = true;
     while (running) {
+
+      timer.tick();
+      float dt = (float) timer.getDeltaSeconds();
+
       for (var layer : layers) {
-        layer.onUpdate();
+        layer.onUpdate(dt);
       }
 
       imGuiLayer.begin();

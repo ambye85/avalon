@@ -35,7 +35,7 @@ class OrthographicCameraTest {
   @Test
   void changingPositionUpdatesViewMatrix() {
     OrthographicCamera camera = new OrthographicCamera(-1.0F, 1.0F, -1.0F, 1.0F);
-    camera.setPosition(0.5F, 0.5F, 0.5F);
+    camera.setPosition(new Vector3f(0.5F, 0.5F, 0.5F));
 
     assertThat(camera.getViewMatrix()).isEqualTo(new Matrix4f(
         new Vector4f(1.0F, -0.0F, 0.0F, 0.0F),
