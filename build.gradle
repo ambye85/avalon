@@ -14,8 +14,9 @@ repositories {
 }
 
 ext {
-    lwjglVersion = "3.2.3"
     imguiVersion = "1.76-0.14"
+    jomlVersion = "1.9.25"
+    lwjglVersion = "3.2.3"
     natives = "natives-macos"
 }
 
@@ -27,13 +28,15 @@ dependencies {
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-glfw"
     implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-stb"
     implementation "io.imgui.java:binding:$imguiVersion"
     implementation "io.imgui.java:lwjgl3:$imguiVersion"
-    implementation "org.joml:joml:1.9.25"
+    implementation "org.joml:joml:$jomlVersion"
 
     runtimeOnly "org.lwjgl:lwjgl::$natives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$natives"
     runtimeOnly "org.lwjgl:lwjgl-opengl::$natives"
+    runtimeOnly "org.lwjgl:lwjgl-stb::$natives"
     runtimeOnly "io.imgui.java:$natives:$imguiVersion"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"

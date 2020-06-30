@@ -9,6 +9,7 @@ import uk.ashleybye.avalon.input.Input;
 import uk.ashleybye.avalon.input.KeyCodes;
 import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
 import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
+import uk.ashleybye.avalon.platform.opengl.OpenGLTexture2D;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexArray;
 import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.BufferLayout;
@@ -17,6 +18,7 @@ import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.renderer.Shader;
 import uk.ashleybye.avalon.renderer.ShaderDataType;
+import uk.ashleybye.avalon.renderer.Texture2D;
 import uk.ashleybye.avalon.renderer.VertexArray;
 
 public class Sandbox extends Application {
@@ -38,6 +40,7 @@ class ExampleLayer extends Layer {
   private final VertexArray squareVertexArray;
   private final Shader colourShader;
   private final Shader flatColorShader;
+  private final Shader textureShader;
   private final OrthographicCamera camera;
   private final Vector3f cameraPosition;
   private final float cameraMovementSpeed = 5.0F;
@@ -46,6 +49,7 @@ class ExampleLayer extends Layer {
   private final Matrix4f squareScale;
   private final float[] squareColor = new float[]{0.2F, 0.3F, 0.8F};
   private float cameraRotation;
+  private final Texture2D texture;
 
   public ExampleLayer() {
     super("Example Layer");
@@ -70,15 +74,16 @@ class ExampleLayer extends Layer {
     triangleVertexArray.setIndexBuffer(triangleIndexBuffer);
 
     float[] squareVertices = new float[]{
-        -0.5F, -0.5F, 0.0F,
-        +0.5F, -0.5F, 0.0F,
-        +0.5F, +0.5F, 0.0F,
-        -0.5F, +0.5F, 0.0F,
+        -0.5F, -0.5F, 0.0F, 0.0F, 0.0F,
+        +0.5F, -0.5F, 0.0F, 1.0F, 0.0F,
+        +0.5F, +0.5F, 0.0F, 1.0F, 1.0F,
+        -0.5F, +0.5F, 0.0F, 0.0F, 1.0F,
     };
 
     squareVertexArray = new OpenGLVertexArray();
     BufferLayout squareLayout = BufferLayout.builder()
         .addElement(ShaderDataType.FLOAT_3, "a_Position")
+        .addElement(ShaderDataType.FLOAT_2, "a_TexCoord")
         .build();
     var squareVertexBuffer = new OpenGLVertexBuffer(squareVertices);
     squareVertexBuffer.setLayout(squareLayout);
@@ -146,6 +151,42 @@ class ExampleLayer extends Layer {
 
     flatColorShader = new OpenGLShader(flatColorVertexSource, flatColorFragmentSource);
 
+    String textureVertexSource = """
+        #version 330 core
+
+        layout(location = 0) in vec3 a_Position;
+        layout(location = 1) in vec2 a_TexCoord;
+        
+        out vec2 v_TexCoord;
+                
+        uniform mat4 u_ViewProjection;
+        uniform mat4 u_Transform;
+
+        void main()
+        {
+          v_TexCoord = a_TexCoord;
+          gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
+        }""";
+
+    String textureFragmentSource = """
+        #version 330 core
+        
+        in vec2 v_TexCoord;
+
+        out vec4 color;
+                
+        uniform sampler2D u_Texture;
+
+        void main()
+        {
+          color = texture(u_Texture, v_TexCoord);
+        }""";
+
+    texture = OpenGLTexture2D.create("Duke_waving.png");
+    textureShader = new OpenGLShader(textureVertexSource, textureFragmentSource);
+    textureShader.bind();
+    ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
+
     cameraPosition = new Vector3f(0.0F, 0.0F, 0.0F);
     cameraRotation = 0.0F;
     camera = new OrthographicCamera(-1.6F, 1.6F, -0.9F, 0.9F);
@@ -196,7 +237,12 @@ class ExampleLayer extends Layer {
       }
     }
 
-    Renderer.submit(colourShader, triangleVertexArray);
+    texture.bind(0);
+    Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
+
+//    Triangle
+//    Renderer.submit(colourShader, triangleVertexArray);
+
     Renderer.endScene();
   }
 

@@ -17,8 +17,10 @@ import static org.lwjgl.opengl.GL20C.glGetProgrami;
 import static org.lwjgl.opengl.GL20C.glGetShaderInfoLog;
 import static org.lwjgl.opengl.GL20C.glGetShaderi;
 import static org.lwjgl.opengl.GL20C.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20C.glGetUniformi;
 import static org.lwjgl.opengl.GL20C.glLinkProgram;
 import static org.lwjgl.opengl.GL20C.glShaderSource;
+import static org.lwjgl.opengl.GL20C.glUniform1i;
 import static org.lwjgl.opengl.GL20C.glUniform3f;
 import static org.lwjgl.opengl.GL20C.glUniform4f;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
@@ -101,6 +103,11 @@ public class OpenGLShader implements Shader {
   @Override
   public void dispose() {
     glDeleteProgram(programId);
+  }
+
+  public void uploadUniform(String name, int value) {
+    int location = glGetUniformLocation(programId, name);
+    glUniform1i(location, value);
   }
 
   public void uploadUniform(String name, Matrix4f matrix) {
