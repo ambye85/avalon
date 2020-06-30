@@ -25,9 +25,10 @@ public abstract class Application {
   public Application() {
     instance = this;
 
+    layers = new LayerStack();
+
     var properties = new WindowProperties("Avalon", 1280, 720, true, this::onEvent);
     window = MacOSWindow.create(properties);
-    layers = new LayerStack();
 
     imGuiLayer = new ImGuiLayer();
     pushOverlay(imGuiLayer);

@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id 'java'
     id 'jacoco'
@@ -17,7 +19,18 @@ ext {
     imguiVersion = "1.76-0.14"
     jomlVersion = "1.9.25"
     lwjglVersion = "3.2.3"
-    natives = "natives-macos"
+}
+
+switch (OperatingSystem.current()) {
+    case OperatingSystem.LINUX:
+        project.ext.natives = "natives-linux"
+        break
+    case OperatingSystem.WINDOWS:
+        project.ext.natives = "natives-windows"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.natives = "natives-macos"
+        break
 }
 
 dependencies {
