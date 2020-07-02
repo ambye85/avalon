@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_RGB;
 import static org.lwjgl.opengl.GL11C.GL_RGB8;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
@@ -17,10 +18,13 @@ import static org.lwjgl.opengl.GL11C.glTexParameteri;
 import static org.lwjgl.opengl.GL11C.glTexSubImage2D;
 import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13C.glActiveTexture;
-import static uk.ashleybye.avalon.util.IOUtils.load;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 import org.lwjgl.stb.STBImage;
 import uk.ashleybye.avalon.renderer.Texture2D;
 
@@ -31,15 +35,11 @@ public class OpenGLTexture2D implements Texture2D {
   private final int height;
   private final int textureId;
 
-  public static OpenGLTexture2D create(String path) {
-    try {
-      return new OpenGLTexture2D(path);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  private OpenGLTexture2D(String path) throws IOException, URISyntaxException {
+    URL res = getClass().getClassLoader().getResource(path);
+    File file = Paths.get(res.toURI()).toFile();
+    String absolutePath = file.getAbsolutePath();
 
-  private OpenGLTexture2D(String path) throws IOException {
     this.path = path;
 
     int[] width = new int[1];
@@ -47,22 +47,41 @@ public class OpenGLTexture2D implements Texture2D {
     int[] channels = new int[1];
 
     STBImage.stbi_set_flip_vertically_on_load(true);
-    ByteBuffer texture = STBImage.stbi_load_from_memory(load(path), width, height, channels, 4);
+    ByteBuffer texture = STBImage.stbi_load(absolutePath, width, height, channels, 0);
     this.width = width[0];
     this.height = height[0];
+
+    int internalFormat = 0;
+    int dataFormat = 0;
+    if (channels[0] == 4) {
+      internalFormat = GL_RGBA8;
+      dataFormat = GL_RGBA;
+    } else if (channels[0] == 3) {
+      internalFormat = GL_RGB8;
+      dataFormat = GL_RGB;
+    }
 
     textureId = glGenTextures();
     glBindTexture(GL_TEXTURE_2D, textureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, dataFormat,
+        GL_UNSIGNED_BYTE,
         texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this.width, this.height, GL_RGBA, GL_UNSIGNED_BYTE,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this.width, this.height, dataFormat, GL_UNSIGNED_BYTE,
         texture);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     STBImage.stbi_image_free(texture);
+  }
+
+  public static OpenGLTexture2D create(String path) {
+    try {
+      return new OpenGLTexture2D(path);
+    } catch (IOException | URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

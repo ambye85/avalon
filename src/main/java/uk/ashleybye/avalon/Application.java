@@ -8,6 +8,7 @@ import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
 import uk.ashleybye.avalon.platform.macos.MacOSTimer;
 import uk.ashleybye.avalon.platform.macos.MacOSWindow;
+import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.time.Timer;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
@@ -29,6 +30,8 @@ public abstract class Application {
 
     var properties = new WindowProperties("Avalon", 1280, 720, true, this::onEvent);
     window = MacOSWindow.create(properties);
+
+    Renderer.init();
 
     imGuiLayer = new ImGuiLayer();
     pushOverlay(imGuiLayer);

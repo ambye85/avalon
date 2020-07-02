@@ -12,6 +12,10 @@ public class Renderer {
     return RENDERER_API_VERSION;
   }
 
+  public static void init() {
+    RenderCommand.init();
+  }
+
   public static void beginScene(OrthographicCamera camera) {
     viewProjectionMatrix = camera.getViewProjectionMatrix();
   }

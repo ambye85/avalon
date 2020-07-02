@@ -50,6 +50,7 @@ class ExampleLayer extends Layer {
   private final float[] squareColor = new float[]{0.2F, 0.3F, 0.8F};
   private float cameraRotation;
   private final Texture2D texture;
+  private final Texture2D duke;
 
   public ExampleLayer() {
     super("Example Layer");
@@ -183,6 +184,7 @@ class ExampleLayer extends Layer {
         }""";
 
     texture = OpenGLTexture2D.create("textures/Checkerboard.png");
+    duke = OpenGLTexture2D.create("textures/Duke_waving.png");
     textureShader = new OpenGLShader(textureVertexSource, textureFragmentSource);
     textureShader.bind();
     ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
@@ -240,6 +242,9 @@ class ExampleLayer extends Layer {
     texture.bind(0);
     Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
     texture.unbind();
+    duke.bind(0);
+    Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
+    duke.unbind();
 
 //    Triangle
 //    Renderer.submit(colourShader, triangleVertexArray);

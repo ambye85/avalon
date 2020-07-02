@@ -6,6 +6,10 @@ public class RenderCommand {
 
   private static final RendererAPI rendererAPI = new OpenGLRendererAPI();
 
+  static void init() {
+    rendererAPI.init();
+  }
+
   public static void setClearColor(float r, float g, float b, float a) {
     rendererAPI.setClearColor(r, g, b, a);
   }
