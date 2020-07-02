@@ -17,7 +17,6 @@ import static org.lwjgl.opengl.GL20C.glGetProgrami;
 import static org.lwjgl.opengl.GL20C.glGetShaderInfoLog;
 import static org.lwjgl.opengl.GL20C.glGetShaderi;
 import static org.lwjgl.opengl.GL20C.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20C.glGetUniformi;
 import static org.lwjgl.opengl.GL20C.glLinkProgram;
 import static org.lwjgl.opengl.GL20C.glShaderSource;
 import static org.lwjgl.opengl.GL20C.glUniform1i;

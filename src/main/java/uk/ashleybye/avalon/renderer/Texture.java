@@ -9,4 +9,6 @@ public interface Texture {
   void bind(int slot);
 
   void dispose();
+
+  void unbind();
 }

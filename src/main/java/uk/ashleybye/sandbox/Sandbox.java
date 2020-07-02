@@ -182,7 +182,7 @@ class ExampleLayer extends Layer {
           color = texture(u_Texture, v_TexCoord);
         }""";
 
-    texture = OpenGLTexture2D.create("Duke_waving.png");
+    texture = OpenGLTexture2D.create("textures/Checkerboard.png");
     textureShader = new OpenGLShader(textureVertexSource, textureFragmentSource);
     textureShader.bind();
     ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
@@ -239,6 +239,7 @@ class ExampleLayer extends Layer {
 
     texture.bind(0);
     Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
+    texture.unbind();
 
 //    Triangle
 //    Renderer.submit(colourShader, triangleVertexArray);
@@ -258,6 +259,8 @@ class ExampleLayer extends Layer {
 
   @Override
   public void onDetach() {
+    texture.dispose();
+    textureShader.dispose();
     flatColorShader.dispose();
     colourShader.dispose();
     squareVertexArray.dispose();

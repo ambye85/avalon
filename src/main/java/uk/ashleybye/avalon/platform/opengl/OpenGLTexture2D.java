@@ -1,52 +1,66 @@
 package uk.ashleybye.avalon.platform.opengl;
 
 import static org.lwjgl.opengl.GL11C.GL_LINEAR;
+import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_RGB;
 import static org.lwjgl.opengl.GL11C.GL_RGB8;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glDeleteTextures;
-import static org.lwjgl.opengl.GL45C.glBindTextureUnit;
-import static org.lwjgl.opengl.GL45C.glCreateTextures;
-import static org.lwjgl.opengl.GL45C.glTextureParameteri;
-import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
-import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
+import static org.lwjgl.opengl.GL11C.glGenTextures;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
+import static org.lwjgl.opengl.GL11C.glTexSubImage2D;
+import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13C.glActiveTexture;
+import static uk.ashleybye.avalon.util.IOUtils.load;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.lwjgl.stb.STBImage;
 import uk.ashleybye.avalon.renderer.Texture2D;
 
 public class OpenGLTexture2D implements Texture2D {
 
-  private String path;
-  private int width;
-  private int height;
-  private int textureId;
+  private final String path;
+  private final int width;
+  private final int height;
+  private final int textureId;
 
   public static OpenGLTexture2D create(String path) {
-    return new OpenGLTexture2D(path);
+    try {
+      return new OpenGLTexture2D(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  private OpenGLTexture2D(String path) {
+  private OpenGLTexture2D(String path) throws IOException {
     this.path = path;
 
     int[] width = new int[1];
     int[] height = new int[1];
     int[] channels = new int[1];
 
-    ByteBuffer texture = STBImage.stbi_load(path, width, height, channels, 0);
+    STBImage.stbi_set_flip_vertically_on_load(true);
+    ByteBuffer texture = STBImage.stbi_load_from_memory(load(path), width, height, channels, 4);
     this.width = width[0];
     this.height = height[0];
 
-    textureId = glCreateTextures(GL_TEXTURE_2D);
-    glTextureStorage2D(textureId, 1, GL_RGB8, this.width, this.height);
-
-    glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTextureSubImage2D(textureId, 0, 0, 0, this.width, this.height, GL_RGB, GL_UNSIGNED_BYTE, texture);
+    textureId = glGenTextures();
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this.width, this.height, GL_RGBA, GL_UNSIGNED_BYTE,
+        texture);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     STBImage.stbi_image_free(texture);
   }
@@ -63,11 +77,17 @@ public class OpenGLTexture2D implements Texture2D {
 
   @Override
   public void bind(int slot) {
-    glBindTextureUnit(slot, textureId);
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, textureId);
   }
 
   @Override
   public void dispose() {
     glDeleteTextures(textureId);
+  }
+
+  @Override
+  public void unbind() {
+    glBindTexture(GL_TEXTURE_2D, 0);
   }
 }
