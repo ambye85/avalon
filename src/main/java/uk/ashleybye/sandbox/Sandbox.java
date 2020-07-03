@@ -123,7 +123,7 @@ class ExampleLayer extends Layer {
           color = v_Color;
         }""";
 
-    colourShader = new OpenGLShader(colourVertexSource, colourFragmentSource);
+    colourShader = OpenGLShader.create(colourVertexSource, colourFragmentSource);
 
     String flatColorVertexSource = """
         #version 330 core
@@ -150,42 +150,14 @@ class ExampleLayer extends Layer {
           color = vec4(u_Color, 1.0);
         }""";
 
-    flatColorShader = new OpenGLShader(flatColorVertexSource, flatColorFragmentSource);
+    flatColorShader = OpenGLShader.create(flatColorVertexSource, flatColorFragmentSource);
 
-    String textureVertexSource = """
-        #version 330 core
 
-        layout(location = 0) in vec3 a_Position;
-        layout(location = 1) in vec2 a_TexCoord;
-        
-        out vec2 v_TexCoord;
-                
-        uniform mat4 u_ViewProjection;
-        uniform mat4 u_Transform;
-
-        void main()
-        {
-          v_TexCoord = a_TexCoord;
-          gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
-        }""";
-
-    String textureFragmentSource = """
-        #version 330 core
-        
-        in vec2 v_TexCoord;
-
-        out vec4 color;
-                
-        uniform sampler2D u_Texture;
-
-        void main()
-        {
-          color = texture(u_Texture, v_TexCoord);
-        }""";
 
     texture = OpenGLTexture2D.create("textures/Checkerboard.png");
     duke = OpenGLTexture2D.create("textures/Duke_waving.png");
-    textureShader = new OpenGLShader(textureVertexSource, textureFragmentSource);
+
+    textureShader = OpenGLShader.create("shaders/texture.glsl");
     textureShader.bind();
     ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
 

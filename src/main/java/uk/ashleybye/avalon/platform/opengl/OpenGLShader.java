@@ -1,6 +1,7 @@
 package uk.ashleybye.avalon.platform.opengl;
 
 import static org.lwjgl.opengl.GL11C.GL_FALSE;
+import static org.lwjgl.opengl.GL11C.GL_NONE;
 import static org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20C.GL_LINK_STATUS;
@@ -25,50 +26,118 @@ import static org.lwjgl.opengl.GL20C.glUniform4f;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20C.glUseProgram;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GL20C;
 import uk.ashleybye.avalon.renderer.Shader;
 
 public class OpenGLShader implements Shader {
 
+  private static final String TYPE_TOKEN = "#type";
   private final int programId;
   private final float[] uniformMatrix4f = new float[16];
 
-  public OpenGLShader(String vertexSource, String fragmentSource) {
-    int vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
-    int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
-    programId = createProgram(vertexShader, fragmentShader);
-
-    glDetachShader(programId, vertexShader);
-    glDetachShader(programId, fragmentShader);
+  private OpenGLShader(String vertexSource, String fragmentSource) {
+    var shaderIds = compile(
+        Map.of(GL_VERTEX_SHADER, vertexSource, GL_FRAGMENT_SHADER, fragmentSource));
+    programId = link(shaderIds);
   }
 
-  private int compileShader(int type, String source) {
-    int shader = glCreateShader(type);
-    glShaderSource(shader, source);
-    glCompileShader(shader);
+  private OpenGLShader(String path) {
+    var shaderSource = load(path);
+    var programs = parse(shaderSource);
+    var shaderIds = compile(programs);
+    programId = link(shaderIds);
+  }
 
-    boolean isCompiled = glGetShaderi(shader, GL_COMPILE_STATUS) != GL_FALSE;
-    if (!isCompiled) {
-      String shaderLog = glGetShaderInfoLog(shader);
-      if (shaderLog.trim().length() > 0) {
-        System.err.println(shaderLog);
-      }
+  public static OpenGLShader create(String vertexSource, String fragmentSource) {
+    return new OpenGLShader(vertexSource, fragmentSource);
+  }
 
-      glDeleteShader(shader);
+  public static OpenGLShader create(String path) {
+    return new OpenGLShader(path);
+  }
 
-      throw new IllegalStateException("Could not compile shader");
+  private static String load(String path) {
+    URL url = Thread.currentThread().getContextClassLoader().getResource(path);
+    try {
+      return Files.readString(Paths.get(url.toURI()));
+    } catch (IOException | URISyntaxException e) {
+      throw new RuntimeException("Could not load shader file");
+    }
+  }
+
+  static Map<Integer, String> parse(String source) {
+    Map<Integer, String> programs = new HashMap<>();
+
+    int current = source.indexOf(TYPE_TOKEN);
+    while (current < source.length()) {
+      var next = source.indexOf("\n", current);
+      var rawType = source.substring(current + TYPE_TOKEN.length(), next).strip();
+      var shaderType = lookupOpenGLShaderType(rawType);
+      current = next;
+
+      next = source.indexOf(TYPE_TOKEN, next + 1);
+      next = next == -1 ? source.length() : next;
+      var shaderSource = source.substring(current + 1, next);
+      current = next;
+
+      programs.put(shaderType, shaderSource);
     }
 
-    return shader;
+    return programs;
   }
 
-  private int createProgram(int vertexShader, int fragmentShader) {
+  private static int lookupOpenGLShaderType(String type) {
+    return switch (type) {
+      case "vertex" -> GL_VERTEX_SHADER;
+      case "fragment" -> GL_FRAGMENT_SHADER;
+      default -> GL_NONE;
+    };
+  }
+
+  private static CompiledShader compile(Map<Integer, String> programs) {
+    List<Integer> shaderIds = new ArrayList<>(programs.size());
+
     int programId = glCreateProgram();
 
-    glAttachShader(programId, vertexShader);
-    glAttachShader(programId, fragmentShader);
+    programs.forEach((shaderType, shaderSource) -> {
+      int shader = glCreateShader(shaderType);
+      glShaderSource(shader, shaderSource);
+      glCompileShader(shader);
+
+      boolean isCompiled = glGetShaderi(shader, GL_COMPILE_STATUS) != GL_FALSE;
+      if (!isCompiled) {
+        String shaderLog = glGetShaderInfoLog(shader);
+        if (shaderLog.trim().length() > 0) {
+          System.err.println(shaderLog);
+        }
+
+        glDeleteShader(shader);
+
+        throw new IllegalStateException("Could not compile shader");
+      }
+
+      glAttachShader(programId, shader);
+      shaderIds.add(shader);
+    });
+
+    return new CompiledShader(programId, shaderIds);
+  }
+
+  private static int link(CompiledShader compiledShader) {
+    var programId = compiledShader.programId;
+    var shaderIds = compiledShader.shaderIds;
 
     glLinkProgram(programId);
 
@@ -80,11 +149,12 @@ public class OpenGLShader implements Shader {
       }
 
       glDeleteProgram(programId);
-      glDeleteShader(vertexShader);
-      glDeleteShader(fragmentShader);
+      shaderIds.forEach(GL20C::glDeleteShader);
 
       throw new IllegalStateException("Could not compile shader");
     }
+
+    shaderIds.forEach(shader -> glDetachShader(programId, shader));
 
     return programId;
   }
@@ -122,5 +192,16 @@ public class OpenGLShader implements Shader {
   public void uploadUniform(String name, Vector4f vector) {
     int location = glGetUniformLocation(programId, name);
     glUniform4f(location, vector.x, vector.y, vector.z, vector.w);
+  }
+
+  private static class CompiledShader {
+
+    int programId;
+    List<Integer> shaderIds;
+
+    public CompiledShader(int programId, List<Integer> shaderIds) {
+      this.programId = programId;
+      this.shaderIds = shaderIds;
+    }
   }
 }
