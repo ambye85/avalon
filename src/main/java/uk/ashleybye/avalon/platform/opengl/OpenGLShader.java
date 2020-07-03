@@ -26,6 +26,7 @@ import static org.lwjgl.opengl.GL20C.glUniform4f;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20C.glUseProgram;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -46,22 +47,33 @@ public class OpenGLShader implements Shader {
   private static final String TYPE_TOKEN = "#type";
   private final int programId;
   private final float[] uniformMatrix4f = new float[16];
+  private final String name;
 
-  private OpenGLShader(String vertexSource, String fragmentSource) {
+  private OpenGLShader(String name, String vertexSource, String fragmentSource) {
     var shaderIds = compile(
         Map.of(GL_VERTEX_SHADER, vertexSource, GL_FRAGMENT_SHADER, fragmentSource));
     programId = link(shaderIds);
+    this.name = name;
   }
 
-  private OpenGLShader(String path) {
+  private OpenGLShader(String name, String path) {
     var shaderSource = load(path);
     var programs = parse(shaderSource);
     var shaderIds = compile(programs);
     programId = link(shaderIds);
+    this.name = name;
   }
 
-  public static OpenGLShader create(String vertexSource, String fragmentSource) {
-    return new OpenGLShader(vertexSource, fragmentSource);
+  private OpenGLShader(String path) {
+    this(filename(path), path);
+  }
+
+  public static OpenGLShader create(String name, String vertexSource, String fragmentSource) {
+    return new OpenGLShader(name, vertexSource, fragmentSource);
+  }
+
+  public static OpenGLShader create(String name, String path) {
+    return new OpenGLShader(name, path);
   }
 
   public static OpenGLShader create(String path) {
@@ -159,6 +171,14 @@ public class OpenGLShader implements Shader {
     return programId;
   }
 
+  private static String filename(String path) {
+    var start = path.lastIndexOf(File.separator);
+    start = start == -1 ? 0 : start + 1;
+    var end = path.lastIndexOf(".");
+    end = end == -1 ? path.length() - 1 : end;
+    return path.substring(start, end);
+  }
+
   @Override
   public void bind() {
     glUseProgram(programId);
@@ -172,6 +192,11 @@ public class OpenGLShader implements Shader {
   @Override
   public void dispose() {
     glDeleteProgram(programId);
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 
   public void uploadUniform(String name, int value) {

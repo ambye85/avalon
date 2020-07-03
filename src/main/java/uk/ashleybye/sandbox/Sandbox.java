@@ -16,8 +16,8 @@ import uk.ashleybye.avalon.renderer.BufferLayout;
 import uk.ashleybye.avalon.renderer.OrthographicCamera;
 import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer;
-import uk.ashleybye.avalon.renderer.Shader;
 import uk.ashleybye.avalon.renderer.ShaderDataType;
+import uk.ashleybye.avalon.renderer.ShaderLibrary;
 import uk.ashleybye.avalon.renderer.Texture2D;
 import uk.ashleybye.avalon.renderer.VertexArray;
 
@@ -36,11 +36,9 @@ public class Sandbox extends Application {
 
 class ExampleLayer extends Layer {
 
+  private final ShaderLibrary shaderLibrary;
   private final VertexArray triangleVertexArray;
   private final VertexArray squareVertexArray;
-  private final Shader colourShader;
-  private final Shader flatColorShader;
-  private final Shader textureShader;
   private final OrthographicCamera camera;
   private final Vector3f cameraPosition;
   private final float cameraMovementSpeed = 5.0F;
@@ -49,8 +47,8 @@ class ExampleLayer extends Layer {
   private final Matrix4f squareScale;
   private final float[] squareColor = new float[]{0.2F, 0.3F, 0.8F};
   private float cameraRotation;
-  private final Texture2D texture;
-  private final Texture2D duke;
+  private final Texture2D checkerboardTexture;
+  private final Texture2D dukeWavingTexture;
 
   public ExampleLayer() {
     super("Example Layer");
@@ -123,8 +121,6 @@ class ExampleLayer extends Layer {
           color = v_Color;
         }""";
 
-    colourShader = OpenGLShader.create(colourVertexSource, colourFragmentSource);
-
     String flatColorVertexSource = """
         #version 330 core
 
@@ -150,14 +146,17 @@ class ExampleLayer extends Layer {
           color = vec4(u_Color, 1.0);
         }""";
 
-    flatColorShader = OpenGLShader.create(flatColorVertexSource, flatColorFragmentSource);
+    shaderLibrary = new ShaderLibrary();
+    shaderLibrary
+        .add(OpenGLShader.create("vertexPosColour", colourVertexSource, colourFragmentSource));
+    shaderLibrary
+        .add(OpenGLShader.create("flatColour", flatColorVertexSource, flatColorFragmentSource));
+    shaderLibrary.load("shaders/texture.glsl");
 
+    checkerboardTexture = OpenGLTexture2D.create("textures/Checkerboard.png");
+    dukeWavingTexture = OpenGLTexture2D.create("textures/Duke_waving.png");
 
-
-    texture = OpenGLTexture2D.create("textures/Checkerboard.png");
-    duke = OpenGLTexture2D.create("textures/Duke_waving.png");
-
-    textureShader = OpenGLShader.create("shaders/texture.glsl");
+    var textureShader = shaderLibrary.get("texture").get();
     textureShader.bind();
     ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
 
@@ -199,6 +198,7 @@ class ExampleLayer extends Layer {
 
     Renderer.beginScene(camera);
 
+    var flatColorShader = shaderLibrary.get("flatColour").get();
     flatColorShader.bind();
     ((OpenGLShader) flatColorShader).uploadUniform("u_Color", new Vector3f(squareColor));
 
@@ -211,12 +211,13 @@ class ExampleLayer extends Layer {
       }
     }
 
-    texture.bind(0);
+    var textureShader = shaderLibrary.get("texture").get();
+    checkerboardTexture.bind(0);
     Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
-    texture.unbind();
-    duke.bind(0);
+    checkerboardTexture.unbind();
+    dukeWavingTexture.bind(0);
     Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
-    duke.unbind();
+    dukeWavingTexture.unbind();
 
 //    Triangle
 //    Renderer.submit(colourShader, triangleVertexArray);
@@ -236,10 +237,9 @@ class ExampleLayer extends Layer {
 
   @Override
   public void onDetach() {
-    texture.dispose();
-    textureShader.dispose();
-    flatColorShader.dispose();
-    colourShader.dispose();
+    shaderLibrary.dispose();
+    checkerboardTexture.dispose();
+    dukeWavingTexture.dispose();
     squareVertexArray.dispose();
     triangleVertexArray.dispose();
   }

@@ -7,4 +7,6 @@ public interface Shader {
   void unbind();
 
   void dispose();
+
+  String getName();
 }
