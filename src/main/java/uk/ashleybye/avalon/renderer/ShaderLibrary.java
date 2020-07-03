@@ -3,7 +3,6 @@ package uk.ashleybye.avalon.renderer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
 
 public class ShaderLibrary {
 
@@ -22,13 +21,13 @@ public class ShaderLibrary {
   }
 
   public Shader load(String path) {
-    var shader = OpenGLShader.create(path);
+    var shader = Shader.create(path);
     add(shader);
     return shader;
   }
 
   public Shader load(String name, String path) {
-    var shader = OpenGLShader.create(name, path);
+    var shader = Shader.create(name, path);
     add(name, shader);
     return shader;
   }

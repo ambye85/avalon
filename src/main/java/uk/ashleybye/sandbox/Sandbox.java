@@ -7,19 +7,18 @@ import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
 import uk.ashleybye.avalon.input.Input;
 import uk.ashleybye.avalon.input.KeyCodes;
-import uk.ashleybye.avalon.platform.opengl.OpenGLIndexBuffer;
 import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
-import uk.ashleybye.avalon.platform.opengl.OpenGLTexture2D;
-import uk.ashleybye.avalon.platform.opengl.OpenGLVertexArray;
-import uk.ashleybye.avalon.platform.opengl.OpenGLVertexBuffer;
 import uk.ashleybye.avalon.renderer.BufferLayout;
+import uk.ashleybye.avalon.renderer.IndexBuffer;
 import uk.ashleybye.avalon.renderer.OrthographicCamera;
 import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer;
+import uk.ashleybye.avalon.renderer.Shader;
 import uk.ashleybye.avalon.renderer.ShaderDataType;
 import uk.ashleybye.avalon.renderer.ShaderLibrary;
 import uk.ashleybye.avalon.renderer.Texture2D;
 import uk.ashleybye.avalon.renderer.VertexArray;
+import uk.ashleybye.avalon.renderer.VertexBuffer;
 
 public class Sandbox extends Application {
 
@@ -59,17 +58,17 @@ class ExampleLayer extends Layer {
         +0.0F, +0.5F, 0.0F, 0.8F, 0.8F, 0.2F, 1.0F,
     };
 
-    triangleVertexArray = new OpenGLVertexArray();
+    triangleVertexArray = VertexArray.create();
     BufferLayout triangleLayout = BufferLayout.builder()
         .addElement(ShaderDataType.FLOAT_3, "a_Position")
         .addElement(ShaderDataType.FLOAT_4, "a_Color")
         .build();
-    var triangleVertexBuffer = new OpenGLVertexBuffer(triangleVertices);
+    var triangleVertexBuffer = VertexBuffer.create(triangleVertices);
     triangleVertexBuffer.setLayout(triangleLayout);
     triangleVertexArray.addVertexBuffer(triangleVertexBuffer);
 
     int[] triangleIndices = new int[]{0, 1, 2};
-    var triangleIndexBuffer = new OpenGLIndexBuffer(triangleIndices);
+    var triangleIndexBuffer = IndexBuffer.create(triangleIndices);
     triangleVertexArray.setIndexBuffer(triangleIndexBuffer);
 
     float[] squareVertices = new float[]{
@@ -79,17 +78,17 @@ class ExampleLayer extends Layer {
         -0.5F, +0.5F, 0.0F, 0.0F, 1.0F,
     };
 
-    squareVertexArray = new OpenGLVertexArray();
+    squareVertexArray = VertexArray.create();
     BufferLayout squareLayout = BufferLayout.builder()
         .addElement(ShaderDataType.FLOAT_3, "a_Position")
         .addElement(ShaderDataType.FLOAT_2, "a_TexCoord")
         .build();
-    var squareVertexBuffer = new OpenGLVertexBuffer(squareVertices);
+    var squareVertexBuffer = VertexBuffer.create(squareVertices);
     squareVertexBuffer.setLayout(squareLayout);
     squareVertexArray.addVertexBuffer(squareVertexBuffer);
 
     int[] squareIndices = new int[]{0, 1, 2, 2, 3, 0};
-    var squareIndexBuffer = new OpenGLIndexBuffer(squareIndices);
+    var squareIndexBuffer = IndexBuffer.create(squareIndices);
     squareVertexArray.setIndexBuffer(squareIndexBuffer);
 
     String colourVertexSource = """
@@ -148,13 +147,13 @@ class ExampleLayer extends Layer {
 
     shaderLibrary = new ShaderLibrary();
     shaderLibrary
-        .add(OpenGLShader.create("vertexPosColour", colourVertexSource, colourFragmentSource));
+        .add(Shader.create("vertexPosColour", colourVertexSource, colourFragmentSource));
     shaderLibrary
-        .add(OpenGLShader.create("flatColour", flatColorVertexSource, flatColorFragmentSource));
+        .add(Shader.create("flatColour", flatColorVertexSource, flatColorFragmentSource));
     shaderLibrary.load("shaders/texture.glsl");
 
-    checkerboardTexture = OpenGLTexture2D.create("textures/Checkerboard.png");
-    dukeWavingTexture = OpenGLTexture2D.create("textures/Duke_waving.png");
+    checkerboardTexture = Texture2D.create("textures/Checkerboard.png");
+    dukeWavingTexture = Texture2D.create("textures/Duke_waving.png");
 
     var textureShader = shaderLibrary.get("texture").get();
     textureShader.bind();

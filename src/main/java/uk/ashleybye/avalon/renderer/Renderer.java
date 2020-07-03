@@ -8,7 +8,7 @@ public class Renderer {
   private static final RendererAPIVersion RENDERER_API_VERSION = RendererAPIVersion.OPEN_GL;
   private static Matrix4f viewProjectionMatrix;
 
-  public static RendererAPIVersion getAPI() {
+  public static RendererAPIVersion getAPIVersion() {
     return RENDERER_API_VERSION;
   }
 

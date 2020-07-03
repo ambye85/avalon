@@ -1,15 +1,11 @@
 package uk.ashleybye.avalon.window;
 
-public abstract class Window {
+import uk.ashleybye.avalon.platform.macos.MacOSWindow;
 
-  private static WindowFactory factory;
+public interface Window {
 
-  public static final void setFactory(WindowFactory factory) {
-    Window.factory = factory;
-  }
-
-  public static final Window create(WindowProperties properties) {
-    return factory.create(properties);
+  static Window create(WindowProperties properties) {
+    return new MacOSWindow(properties);
   }
 
   public abstract long getWindowId();

@@ -6,9 +6,6 @@ import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
-import uk.ashleybye.avalon.platform.macos.MacOSTimer;
-import uk.ashleybye.avalon.platform.macos.MacOSWindow;
-import uk.ashleybye.avalon.platform.macos.MacOSWindowFactory;
 import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.time.Timer;
 import uk.ashleybye.avalon.window.Window;
@@ -25,7 +22,6 @@ public abstract class Application {
   private boolean running = false;
 
   public Application() {
-    loadFactories(System.getProperty("os.name"));
     instance = this;
 
     layers = new LayerStack();
@@ -38,15 +34,7 @@ public abstract class Application {
     imGuiLayer = new ImGuiLayer();
     pushOverlay(imGuiLayer);
 
-    timer = new MacOSTimer();
-  }
-
-  private void loadFactories(String os) {
-    if (!os.contains("Mac OS X")) {
-      throw new RuntimeException(os + " is not currently supported");
-    }
-
-    Window.setFactory(new MacOSWindowFactory());
+    timer = Timer.create();
   }
 
   public static Application getInstance() {

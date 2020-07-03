@@ -46,12 +46,11 @@ import uk.ashleybye.avalon.event.MouseMovedEvent;
 import uk.ashleybye.avalon.event.MouseScrolledEvent;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.event.WindowResizeEvent;
-import uk.ashleybye.avalon.platform.opengl.OpenGLContext;
 import uk.ashleybye.avalon.renderer.GraphicsContext;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
-public class MacOSWindow extends Window {
+public class MacOSWindow implements Window {
 
   private static boolean GLFWInitialised = false;
   private final long windowId;
@@ -70,7 +69,7 @@ public class MacOSWindow extends Window {
   private boolean vSync;
   private GLFWErrorCallback errorCallback;
 
-  MacOSWindow(WindowProperties properties) {
+  public MacOSWindow(WindowProperties properties) {
     title = properties.title();
     width = properties.width();
     height = properties.height();
@@ -94,7 +93,7 @@ public class MacOSWindow extends Window {
     }
 
     windowId = glfwCreateWindow(width, height, title, NULL, NULL);
-    context = new OpenGLContext(windowId);
+    context = GraphicsContext.create(windowId);
     context.initialise();
     setVSync(true);
 

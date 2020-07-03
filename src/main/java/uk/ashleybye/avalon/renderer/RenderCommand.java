@@ -4,7 +4,11 @@ import uk.ashleybye.avalon.platform.opengl.OpenGLRendererAPI;
 
 public class RenderCommand {
 
-  private static final RendererAPI rendererAPI = new OpenGLRendererAPI();
+  private static final RendererAPI rendererAPI = switch (Renderer.getAPIVersion()) {
+    case NONE -> throw new RuntimeException(
+        Renderer.getAPIVersion().toString() + " is not supported");
+    case OPEN_GL -> new OpenGLRendererAPI();
+  };
 
   static void init() {
     rendererAPI.init();
