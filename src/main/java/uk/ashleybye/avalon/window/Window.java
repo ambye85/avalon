@@ -1,18 +1,28 @@
 package uk.ashleybye.avalon.window;
 
-public interface Window {
+public abstract class Window {
 
-  long getWindowId();
+  private static WindowFactory factory;
 
-  int getWidth();
+  public static final void setFactory(WindowFactory factory) {
+    Window.factory = factory;
+  }
 
-  int getHeight();
+  public static final Window create(WindowProperties properties) {
+    return factory.create(properties);
+  }
 
-  void onUpdate();
+  public abstract long getWindowId();
 
-  boolean isVSync();
+  public abstract int getWidth();
 
-  void setVSync(boolean enabled);
+  public abstract int getHeight();
 
-  void dispose();
+  public abstract void onUpdate();
+
+  public abstract boolean isVSync();
+
+  public abstract void setVSync(boolean enabled);
+
+  public abstract void dispose();
 }

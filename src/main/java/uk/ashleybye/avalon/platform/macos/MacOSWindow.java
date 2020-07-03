@@ -51,7 +51,7 @@ import uk.ashleybye.avalon.renderer.GraphicsContext;
 import uk.ashleybye.avalon.window.Window;
 import uk.ashleybye.avalon.window.WindowProperties;
 
-public class MacOSWindow implements Window {
+public class MacOSWindow extends Window {
 
   private static boolean GLFWInitialised = false;
   private final long windowId;
@@ -70,7 +70,7 @@ public class MacOSWindow implements Window {
   private boolean vSync;
   private GLFWErrorCallback errorCallback;
 
-  private MacOSWindow(WindowProperties properties) {
+  MacOSWindow(WindowProperties properties) {
     title = properties.title();
     width = properties.width();
     height = properties.height();
@@ -174,10 +174,6 @@ public class MacOSWindow implements Window {
     });
 
     glfwShowWindow(windowId);
-  }
-
-  public static Window create(WindowProperties properties) {
-    return new MacOSWindow(properties);
   }
 
   @Override
