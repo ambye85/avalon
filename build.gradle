@@ -2,6 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id 'java'
+    id 'checkstyle'
     id 'jacoco'
     id 'application'
 }
@@ -57,13 +58,21 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
 }
 
-application {
-    mainClassName = 'uk.ashleybye.juggernaut.Engine'
-    applicationDefaultJvmArgs = ['-XstartOnFirstThread', '-XX:+ShowCodeDetailsInExceptionMessages']
-}
+//application {
+//    mainClassName = 'sandbox.Sandbox'
+//    if (OperatingSystem.current().isMacOsX()) {
+//        applicationDefaultJvmArgs = ['-XstartOnFirstThread', '-XX:+ShowCodeDetailsInExceptionMessages', '-Djava.awt.headless=true']
+//    } else {
+//        applicationDefaultJvmArgs = ['-XX:+ShowCodeDetailsInExceptionMessages']
+//    }
+//}
 
 wrapper {
     gradleVersion = '6.4'
+}
+
+checkstyle {
+    toolVersion "8.34"
 }
 
 jacoco {
