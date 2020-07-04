@@ -8,12 +8,16 @@ public class Renderer {
   private static final RendererAPIVersion RENDERER_API_VERSION = RendererAPIVersion.OPEN_GL;
   private static Matrix4f viewProjectionMatrix;
 
-  public static RendererAPIVersion getAPIVersion() {
-    return RENDERER_API_VERSION;
-  }
-
   public static void init() {
     RenderCommand.init();
+  }
+
+  public static void onWindowResize(int width, int height) {
+    RenderCommand.setViewport(0, 0, width, height);
+  }
+
+  public static RendererAPIVersion getAPIVersion() {
+    return RENDERER_API_VERSION;
   }
 
   public static void beginScene(OrthographicCamera camera) {

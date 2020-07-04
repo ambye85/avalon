@@ -25,4 +25,8 @@ public class RenderCommand {
   public static void drawIndexed(VertexArray vertexArray) {
     rendererAPI.drawIndexed(vertexArray);
   }
+
+  public static void setViewport(int x, int y, int width, int height) {
+    rendererAPI.setViewport(x, y, width, height);
+  }
 }

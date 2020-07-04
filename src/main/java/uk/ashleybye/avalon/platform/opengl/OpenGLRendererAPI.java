@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL11C.glDrawElements;
 import static org.lwjgl.opengl.GL11C.glEnable;
+import static org.lwjgl.opengl.GL11C.glViewport;
 
 import uk.ashleybye.avalon.renderer.RendererAPI;
 import uk.ashleybye.avalon.renderer.VertexArray;
@@ -37,5 +38,10 @@ public class OpenGLRendererAPI implements RendererAPI {
   @Override
   public void drawIndexed(VertexArray vertexArray) {
     glDrawElements(GL_TRIANGLES, vertexArray.getIndexBuffer().getCount(), GL_UNSIGNED_INT, 0L);
+  }
+
+  @Override
+  public void setViewport(int x, int y, int width, int height) {
+    glViewport(x, y, width, height);
   }
 }

@@ -9,4 +9,6 @@ public interface RendererAPI {
   void clear();
 
   void drawIndexed(VertexArray vertexArray);
+
+  void setViewport(int x, int y, int width, int height);
 }

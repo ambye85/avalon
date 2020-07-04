@@ -5,6 +5,7 @@ import static uk.ashleybye.avalon.Logger.Color.GREEN;
 import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
+import uk.ashleybye.avalon.event.WindowResizeEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
 import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.time.Timer;
@@ -20,6 +21,7 @@ public abstract class Application {
   private final Window window;
   private final Timer timer;
   private boolean running = false;
+  private boolean minimised = false;
 
   public Application() {
     instance = this;
@@ -53,8 +55,10 @@ public abstract class Application {
       timer.tick();
       double dt = timer.getDeltaSeconds();
 
-      for (var layer : layers) {
-        layer.onUpdate(dt);
+      if (!minimised) {
+        for (var layer : layers) {
+          layer.onUpdate(dt);
+        }
       }
 
       imGuiLayer.begin();
@@ -73,6 +77,7 @@ public abstract class Application {
   public final boolean onEvent(Event e) {
     var dispatcher = new EventDispatcher(e);
     dispatcher.dispatch(WindowCloseEvent.class, this::onWindowClose);
+    dispatcher.dispatch(WindowResizeEvent.class, this::onWindowResize);
 
     for (var layer : layers.reversed()) {
       layer.onEvent(e);
@@ -104,9 +109,22 @@ public abstract class Application {
     overlay.onDetach();
   }
 
-  private boolean onWindowClose(Event e) {
+  private boolean onWindowClose(Event event) {
     running = false;
-    e.setHandled(true);
+    event.setHandled(true);
     return true;
+  }
+
+  private boolean onWindowResize(Event event) {
+    var e = (WindowResizeEvent) event;
+    if (e.getWidth() == 0 || e.getHeight() == 0) {
+      minimised = true;
+      return false;
+    }
+
+    minimised = false;
+    Renderer.onWindowResize(e.getWidth(), e.getHeight());
+
+    return false;
   }
 }
