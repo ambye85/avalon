@@ -172,7 +172,7 @@ public class OpenGLShader implements Shader {
   }
 
   private static String filename(String path) {
-    var start = path.lastIndexOf(File.separator);
+    var start = path.lastIndexOf("/");
     start = start == -1 ? 0 : start + 1;
     var end = path.lastIndexOf(".");
     end = end == -1 ? path.length() - 1 : end;
