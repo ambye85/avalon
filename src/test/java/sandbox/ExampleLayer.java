@@ -1,18 +1,14 @@
-package uk.ashleybye.sandbox;
+package sandbox;
 
 import imgui.ImGui;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
 import uk.ashleybye.avalon.OrthographicCameraController;
 import uk.ashleybye.avalon.event.Event;
-import uk.ashleybye.avalon.input.Input;
-import uk.ashleybye.avalon.input.KeyCodes;
 import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
 import uk.ashleybye.avalon.renderer.BufferLayout;
 import uk.ashleybye.avalon.renderer.IndexBuffer;
-import uk.ashleybye.avalon.renderer.OrthographicCamera;
 import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.renderer.Shader;
@@ -21,19 +17,6 @@ import uk.ashleybye.avalon.renderer.ShaderLibrary;
 import uk.ashleybye.avalon.renderer.Texture2D;
 import uk.ashleybye.avalon.renderer.VertexArray;
 import uk.ashleybye.avalon.renderer.VertexBuffer;
-
-public class Sandbox extends Application {
-
-  public Sandbox() {
-    super();
-    super.pushLayer(new ExampleLayer());
-  }
-
-  public static void main(String[] args) {
-    var sandbox = new Sandbox();
-    sandbox.run();
-  }
-}
 
 class ExampleLayer extends Layer {
 
@@ -160,7 +143,8 @@ class ExampleLayer extends Layer {
     squarePosition = new Vector3f();
     squareScale = new Matrix4f().scale(0.1F);
 
-    cameraController = new OrthographicCameraController(1280.0 / 720.0); // This is also 16.0/9.0 or 16:9.
+    cameraController = new OrthographicCameraController(
+        1280.0 / 720.0); // This is also 16.0/9.0 or 16:9.
     cameraController.setRotationEnabled(true);
   }
 
