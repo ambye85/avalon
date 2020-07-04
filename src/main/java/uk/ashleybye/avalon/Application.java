@@ -51,7 +51,7 @@ public abstract class Application {
     while (running) {
 
       timer.tick();
-      float dt = (float) timer.getDeltaSeconds();
+      double dt = timer.getDeltaSeconds();
 
       for (var layer : layers) {
         layer.onUpdate(dt);

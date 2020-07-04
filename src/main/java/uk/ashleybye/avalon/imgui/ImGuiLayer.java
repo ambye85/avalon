@@ -40,7 +40,7 @@ public class ImGuiLayer extends Layer {
   }
 
   @Override
-  public void onUpdate(float dt) {
+  public void onUpdate(double dt) {
     super.onUpdate(dt);
   }
 

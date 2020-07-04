@@ -5,6 +5,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import uk.ashleybye.avalon.Application;
 import uk.ashleybye.avalon.Layer;
+import uk.ashleybye.avalon.OrthographicCameraController;
+import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.input.Input;
 import uk.ashleybye.avalon.input.KeyCodes;
 import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
@@ -36,16 +38,12 @@ public class Sandbox extends Application {
 class ExampleLayer extends Layer {
 
   private final ShaderLibrary shaderLibrary;
+  private final OrthographicCameraController cameraController;
   private final VertexArray triangleVertexArray;
   private final VertexArray squareVertexArray;
-  private final OrthographicCamera camera;
-  private final Vector3f cameraPosition;
-  private final float cameraMovementSpeed = 5.0F;
-  private final float cameraRotationSpeed = 180.0F;
   private final Vector3f squarePosition;
   private final Matrix4f squareScale;
   private final float[] squareColor = new float[]{0.2F, 0.3F, 0.8F};
-  private float cameraRotation;
   private final Texture2D checkerboardTexture;
   private final Texture2D dukeWavingTexture;
 
@@ -159,43 +157,21 @@ class ExampleLayer extends Layer {
     textureShader.bind();
     ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
 
-    cameraPosition = new Vector3f(0.0F, 0.0F, 0.0F);
-    cameraRotation = 0.0F;
-    camera = new OrthographicCamera(-1.6F, 1.6F, -0.9F, 0.9F);
-    camera.setPosition(cameraPosition);
-    camera.setRotation(cameraRotation);
-
     squarePosition = new Vector3f();
     squareScale = new Matrix4f().scale(0.1F);
+
+    cameraController = new OrthographicCameraController(1280.0 / 720.0); // This is also 16.0/9.0 or 16:9.
+    cameraController.setRotationEnabled(true);
   }
 
   @Override
-  public void onUpdate(float dt) {
-    if (Input.isKeyPressed(KeyCodes.AVALON_KEY_UP)) {
-      cameraPosition.y += cameraMovementSpeed * dt;
-    }
-    if (Input.isKeyPressed(KeyCodes.AVALON_KEY_DOWN)) {
-      cameraPosition.y -= cameraMovementSpeed * dt;
-    }
-    if (Input.isKeyPressed(KeyCodes.AVALON_KEY_LEFT)) {
-      cameraPosition.x -= cameraMovementSpeed * dt;
-    }
-    if (Input.isKeyPressed(KeyCodes.AVALON_KEY_RIGHT)) {
-      cameraPosition.x += cameraMovementSpeed * dt;
-    }
-    if (Input.isKeyPressed(KeyCodes.AVALON_KEY_A)) {
-      cameraRotation += cameraRotationSpeed * dt;
-    }
-    if (Input.isKeyPressed(KeyCodes.AVALON_KEY_D)) {
-      cameraRotation -= cameraRotationSpeed * dt;
-    }
-    camera.setPosition(cameraPosition);
-    camera.setRotation(cameraRotation);
+  public void onUpdate(double dt) {
+    cameraController.onUpdate(dt);
 
     RenderCommand.setClearColor(0.1F, 0.1F, 0.1F, 1.0F);
     RenderCommand.clear();
 
-    Renderer.beginScene(camera);
+    Renderer.beginScene(cameraController.getCamera());
 
     var flatColorShader = shaderLibrary.get("flatColour").get();
     flatColorShader.bind();
@@ -222,6 +198,11 @@ class ExampleLayer extends Layer {
 //    Renderer.submit(colourShader, triangleVertexArray);
 
     Renderer.endScene();
+  }
+
+  @Override
+  public void onEvent(Event event) {
+    cameraController.onEvent(event);
   }
 
   @Override

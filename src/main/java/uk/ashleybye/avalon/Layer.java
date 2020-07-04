@@ -18,7 +18,7 @@ public abstract class Layer {
     // Intentionally not implemented.
   }
 
-  public void onUpdate(float dt) {
+  public void onUpdate(double dt) {
     // Intentionally not implemented.
   }
 
