@@ -11,4 +11,6 @@ public interface Texture {
   void dispose();
 
   void unbind();
+
+  void setData(int data);
 }

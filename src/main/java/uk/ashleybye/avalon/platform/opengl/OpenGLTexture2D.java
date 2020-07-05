@@ -27,16 +27,36 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryStack;
 import uk.ashleybye.avalon.renderer.Texture2D;
 
 public class OpenGLTexture2D implements Texture2D {
 
-  private final String path;
+  private String path;
   private final int width;
   private final int height;
   private final int textureId;
+  private int internalFormat = 0;
+  private int dataFormat = 0;
+
+  private OpenGLTexture2D(int width, int height) {
+    this.width = width;
+    this.height = height;
+    internalFormat = GL_RGBA8;
+    dataFormat = GL_RGBA;
+
+    textureId = glGenTextures();
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
 
   private OpenGLTexture2D(String path) throws IOException, URISyntaxException {
     URL res = getClass().getClassLoader().getResource(path);
@@ -54,8 +74,6 @@ public class OpenGLTexture2D implements Texture2D {
     this.width = width[0];
     this.height = height[0];
 
-    int internalFormat = 0;
-    int dataFormat = 0;
     if (channels[0] == 4) {
       internalFormat = GL_RGBA8;
       dataFormat = GL_RGBA;
@@ -79,6 +97,10 @@ public class OpenGLTexture2D implements Texture2D {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     STBImage.stbi_image_free(texture);
+  }
+
+  public static Texture2D create(int width, int height) {
+    return new OpenGLTexture2D(width, height);
   }
 
   public static OpenGLTexture2D create(String path) {
@@ -112,6 +134,19 @@ public class OpenGLTexture2D implements Texture2D {
 
   @Override
   public void unbind() {
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  @Override
+  public void setData(int data) {
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      IntBuffer buffer = stack.mallocInt(1).put(data).flip();
+      glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, dataFormat,
+          GL_UNSIGNED_BYTE, buffer);
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this.width, this.height, dataFormat, GL_UNSIGNED_BYTE,
+          buffer);
+    }
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 }

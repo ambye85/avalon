@@ -9,8 +9,8 @@ import org.joml.Vector4f;
 public class Renderer2D {
 
   private static VertexArray vertexArray = null;
-  private static Shader singleColourShader = null;
-  private static Shader textureShader = null;
+  private static Texture2D whiteTexture = null;
+  private static Shader shader = null;
 
   public static void init() {
     float[] vertices = new float[]{
@@ -33,36 +33,32 @@ public class Renderer2D {
     var indexBuffer = IndexBuffer.create(indices);
     vertexArray.setIndexBuffer(indexBuffer);
 
-    singleColourShader = Shader.create("shaders/flatColour.glsl");
-    textureShader = Shader.create("shaders/texture.glsl");
+    whiteTexture = Texture2D.create(1, 1);
+    whiteTexture.setData(0xFFFFFFFF);
 
-    textureShader.bind();
-    textureShader.setData("u_Texture", 0);
-    textureShader.unbind();
+    shader = Shader.create("shaders/basic2d.glsl");
+    shader.bind();
+    shader.setData("u_Texture", 0);
+    shader.unbind();
   }
 
   public static void dispose() {
-    textureShader.dispose();
-    singleColourShader.dispose();
+    shader.dispose();
+    whiteTexture.dispose();
     vertexArray.dispose();
 
-    textureShader = null;
-    singleColourShader = null;
+    shader = null;
+    whiteTexture = null;
     vertexArray = null;
   }
 
   public static void beginScene(OrthographicCamera camera) {
-    singleColourShader.bind();
-    singleColourShader.setData("u_ViewProjection", camera.getViewProjectionMatrix());
-    singleColourShader.unbind();
-
-    textureShader.bind();
-    textureShader.setData("u_ViewProjection", camera.getViewProjectionMatrix());
-    textureShader.unbind();
+    shader.bind();
+    shader.setData("u_ViewProjection", camera.getViewProjectionMatrix());
   }
 
   public static void endScene() {
-
+    shader.unbind();
   }
 
   public static void drawQuad(Vector2f position, Vector2f size, Vector4f color) {
@@ -93,15 +89,15 @@ public class Renderer2D {
         .rotate(Math.toRadians(rotation), new Vector3f(0.0F, 0.0F, 1.0F))
         .scale(size.x, size.y, 1.0F);
 
-    singleColourShader.bind();
-    singleColourShader.setData("u_Transform", transform);
-    singleColourShader.setData("u_Color", new Vector4f(color));
+    shader.setData("u_Transform", transform);
+    shader.setData("u_Color", new Vector4f(color));
+    whiteTexture.bind(0);
     vertexArray.bind();
 
     RenderCommand.drawIndexed(vertexArray);
 
     vertexArray.unbind();
-    singleColourShader.unbind();
+    whiteTexture.unbind();
   }
 
   public static void drawQuad(Vector2f position, Vector2f size, Texture texture) {
@@ -132,8 +128,8 @@ public class Renderer2D {
         .rotate(Math.toRadians(rotation), new Vector3f(0.0F, 0.0F, 1.0F))
         .scale(size.x, size.y, 1.0F);
 
-    textureShader.bind();
-    textureShader.setData("u_Transform", transform);
+    shader.setData("u_Transform", transform);
+    shader.setData("u_Color", new Vector4f(1.0F));
     texture.bind(0);
     vertexArray.bind();
 
@@ -141,6 +137,5 @@ public class Renderer2D {
 
     vertexArray.unbind();
     texture.unbind();
-    textureShader.unbind();
   }
 }
