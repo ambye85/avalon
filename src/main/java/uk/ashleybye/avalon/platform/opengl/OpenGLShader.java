@@ -26,7 +26,6 @@ import static org.lwjgl.opengl.GL20C.glUniform4f;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20C.glUseProgram;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -197,6 +196,11 @@ public class OpenGLShader implements Shader {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public void setData(String name, int value) {
+    uploadUniform(name, value);
   }
 
   @Override
