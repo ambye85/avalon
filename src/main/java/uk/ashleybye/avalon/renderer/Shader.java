@@ -1,5 +1,8 @@
 package uk.ashleybye.avalon.renderer;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
 
 public interface Shader {
@@ -35,4 +38,10 @@ public interface Shader {
   void dispose();
 
   String getName();
+
+  void setData(String name, Vector3f vector);
+
+  void setData(String name, Vector4f vector);
+
+  void setData(String name, Matrix4f matrix);
 }

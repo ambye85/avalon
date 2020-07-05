@@ -1,12 +1,13 @@
 package uk.ashleybye.avalon.renderer;
 
+import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
 
 public class Renderer2D {
+
   private static VertexArray vertexArray = null;
   private static Shader shader = null;
 
@@ -42,8 +43,7 @@ public class Renderer2D {
 
   public static void beginScene(OrthographicCamera camera) {
     shader.bind();
-    ((OpenGLShader) shader).uploadUniform("u_ViewProjection", camera.getViewProjectionMatrix());
-    ((OpenGLShader) shader).uploadUniform("u_Transform", new Matrix4f());
+    shader.setData("u_ViewProjection", camera.getViewProjectionMatrix());
     shader.unbind();
   }
 
@@ -52,19 +52,41 @@ public class Renderer2D {
   }
 
   public static void drawQuad(Vector2f position, Vector2f size, Vector4f color) {
-    drawQuad(new Vector3f(position, 0.0F), size, color);
+    drawRotatedQuad(new Vector3f(position, 0.0F), 0.0F, size, color);
   }
 
   public static void drawQuad(Vector3f position, Vector2f size, Vector4f color) {
-    shader.bind();
-    ((OpenGLShader) shader).uploadUniform("u_Color", new Vector4f(color));
+    drawRotatedQuad(position, 0.0F, size, color);
+  }
 
+  public static void drawRotatedQuad(
+      Vector2f position,
+      float rotation,
+      Vector2f size,
+      Vector4f color
+  ) {
+    drawRotatedQuad(new Vector3f(position, 0.0F), rotation, size, color);
+  }
+
+  public static void drawRotatedQuad(
+      Vector3f position,
+      float rotation,
+      Vector2f size,
+      Vector4f color
+  ) {
+    var transform = new Matrix4f()
+        .translate(position)
+        .rotate(Math.toRadians(rotation), new Vector3f(0.0F, 0.0F, 1.0F))
+        .scale(size.x, size.y, 1.0F);
+
+    shader.bind();
+    shader.setData("u_Transform", transform);
+    shader.setData("u_Color", new Vector4f(color));
     vertexArray.bind();
 
     RenderCommand.drawIndexed(vertexArray);
 
     vertexArray.unbind();
-
     shader.unbind();
   }
 }

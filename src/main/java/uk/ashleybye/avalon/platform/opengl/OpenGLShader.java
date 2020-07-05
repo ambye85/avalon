@@ -199,6 +199,21 @@ public class OpenGLShader implements Shader {
     return name;
   }
 
+  @Override
+  public void setData(String name, Vector3f vector) {
+    uploadUniform(name, vector);
+  }
+
+  @Override
+  public void setData(String name, Vector4f vector) {
+    uploadUniform(name, vector);
+  }
+
+  @Override
+  public void setData(String name, Matrix4f matrix) {
+    uploadUniform(name, matrix);
+  }
+
   public void uploadUniform(String name, int value) {
     int location = glGetUniformLocation(programId, name);
     glUniform1i(location, value);
