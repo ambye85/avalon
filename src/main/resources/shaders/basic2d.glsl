@@ -24,9 +24,10 @@ out vec4 color;
 
 uniform vec4 u_Color;
 uniform sampler2D u_Texture;
+uniform float u_TexScale;
 
 void main()
 {
-    float u_TexScale = 10.0; // Move to uniform.
+//    float u_TexScale = 10.0; // Move to uniform.
     color = texture(u_Texture, v_TexCoord * u_TexScale) * u_Color;
 }

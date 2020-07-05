@@ -9,17 +9,19 @@ import uk.ashleybye.avalon.OrthographicCameraController;
 import uk.ashleybye.avalon.event.Event;
 import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer2D;
-import uk.ashleybye.avalon.renderer.Texture;
 import uk.ashleybye.avalon.renderer.Texture2D;
-import uk.ashleybye.avalon.renderer.VertexArray;
+import uk.ashleybye.avalon.renderer.Transform;
 
 public class Example2DLayer extends Layer {
 
   private final OrthographicCameraController cameraController = new OrthographicCameraController(
       1280.0 / 720.0);
   private final float[] squareColor = new float[]{0.8F, 0.2F, 0.3F, 1.0F};
-  private final Texture checkerboardTexture;
-  private VertexArray vertexArray;
+  private final Texture2D checkerboardTexture;
+  private final Transform adjustableSquareTransform = new Transform();
+  private final Transform rotatedSquareTransform = new Transform();
+  private final Transform checkerboardTransform = new Transform();
+  private final Transform rotatedCheckerboardTransform = new Transform();
 
   public Example2DLayer() {
     super("2D Example Layer");
@@ -29,6 +31,19 @@ public class Example2DLayer extends Layer {
 
   @Override
   public void onAttach() {
+    adjustableSquareTransform.setPosition(-1.0F, 0.0F);
+    adjustableSquareTransform.setScale(0.8F, 0.8F);
+
+    rotatedSquareTransform.setPosition(0.5F, -0.5F);
+    rotatedSquareTransform.setRotation(30.0F);
+    rotatedSquareTransform.setScale(0.5F, 0.75F);
+
+    checkerboardTransform.setPosition(0.0F, 0.0F, -0.1F);
+    checkerboardTransform.setScale(10.0F, 10.0F);
+
+    rotatedCheckerboardTransform.setPosition(0.0F, 0.0F, -0.2F);
+    rotatedCheckerboardTransform.setRotation(-30.0F);
+    rotatedCheckerboardTransform.setScale(20.0F, 20.0F);
   }
 
   @Override
@@ -39,23 +54,14 @@ public class Example2DLayer extends Layer {
     RenderCommand.clear();
 
     Renderer2D.beginScene(cameraController.getCamera());
+    Renderer2D.drawQuad(adjustableSquareTransform, new Vector4f(squareColor));
+    Renderer2D.drawQuad(rotatedSquareTransform, new Vector4f(0.2F, 0.3F, 0.8F, 1.0F));
+    Renderer2D.drawQuad(checkerboardTransform, checkerboardTexture, 10.0F);
     Renderer2D.drawQuad(
-        new Vector2f(-1.0F, 0.0F),
-        new Vector2f(0.8F, 0.8F),
-        new Vector4f(squareColor)
-    );
-    Renderer2D.drawQuad(
-        new Vector2f(0.5F, -0.5F),
-        30.0F,
-        new Vector2f(0.5F, 0.75F),
-        new Vector4f(0.2F, 0.3F, 0.8F, 1.0F)
-    );
-    Renderer2D.drawQuad(
-        new Vector3f(0.0F, 0.0F, -0.1F),
-        new Vector2f(10.0F, 10.0F),
+        rotatedCheckerboardTransform,
+        new Vector4f(0.2F, 0.3F, 0.8F, 1.0F),
         checkerboardTexture
     );
-
     Renderer2D.endScene();
   }
 

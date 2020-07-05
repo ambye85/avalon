@@ -1,7 +1,6 @@
 package uk.ashleybye.avalon.renderer;
 
 import org.joml.Matrix4f;
-import uk.ashleybye.avalon.platform.opengl.OpenGLShader;
 
 public class Renderer {
 
@@ -39,9 +38,8 @@ public class Renderer {
 
   public static void submit(Shader shader, VertexArray vertexArray, Matrix4f transform) {
     shader.bind();
-    // It can only be this for now because nothing else has been implemented, so this is fine.
-    ((OpenGLShader) shader).uploadUniform("u_ViewProjection", viewProjectionMatrix);
-    ((OpenGLShader) shader).uploadUniform("u_Transform", transform);
+    shader.setData("u_ViewProjection", viewProjectionMatrix);
+    shader.setData("u_Transform", transform);
 
     vertexArray.bind();
 

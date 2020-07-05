@@ -41,6 +41,8 @@ public interface Shader {
 
   void setData(String name, int value);
 
+  void setData(String name, float value);
+
   void setData(String name, Vector3f vector);
 
   void setData(String name, Vector4f vector);

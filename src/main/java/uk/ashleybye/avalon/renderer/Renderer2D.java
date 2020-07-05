@@ -61,75 +61,45 @@ public class Renderer2D {
     shader.unbind();
   }
 
-  public static void drawQuad(Vector2f position, Vector2f size, Vector4f color) {
-    drawQuad(new Vector3f(position, 0.0F), 0.0F, size, color);
-  }
-
-  public static void drawQuad(Vector3f position, Vector2f size, Vector4f color) {
-    drawQuad(position, 0.0F, size, color);
-  }
-
   public static void drawQuad(
-      Vector2f position,
-      float rotation,
-      Vector2f size,
+      Transform transform,
       Vector4f color
   ) {
-    drawQuad(new Vector3f(position, 0.0F), rotation, size, color);
+    drawQuad(transform, color, whiteTexture);
   }
 
   public static void drawQuad(
-      Vector3f position,
-      float rotation,
-      Vector2f size,
-      Vector4f color
-  ) {
-    var transform = new Matrix4f()
-        .translate(position)
-        .rotate(Math.toRadians(rotation), new Vector3f(0.0F, 0.0F, 1.0F))
-        .scale(size.x, size.y, 1.0F);
-
-    shader.setData("u_Transform", transform);
-    shader.setData("u_Color", new Vector4f(color));
-    whiteTexture.bind(0);
-    vertexArray.bind();
-
-    RenderCommand.drawIndexed(vertexArray);
-
-    vertexArray.unbind();
-    whiteTexture.unbind();
-  }
-
-  public static void drawQuad(Vector2f position, Vector2f size, Texture texture) {
-    drawQuad(new Vector3f(position, 0.0F), 0.0F, size, texture);
-  }
-
-  public static void drawQuad(Vector3f position, Vector2f size, Texture texture) {
-    drawQuad(position, 0.0F, size, texture);
-  }
-
-  public static void drawQuad(
-      Vector2f position,
-      float rotation,
-      Vector2f size,
+      Transform transform,
       Texture texture
   ) {
-    drawQuad(new Vector3f(position, 0.0F), rotation, size, texture);
+    drawQuad(transform, new Vector4f(1.0F), texture, 1.0F);
   }
 
   public static void drawQuad(
-      Vector3f position,
-      float rotation,
-      Vector2f size,
+      Transform transform,
+      Texture texture,
+      float textureScale
+  ) {
+    drawQuad(transform, new Vector4f(1.0F), texture, textureScale);
+  }
+
+  public static void drawQuad(
+      Transform transform,
+      Vector4f color,
       Texture texture
   ) {
-    var transform = new Matrix4f()
-        .translate(position)
-        .rotate(Math.toRadians(rotation), new Vector3f(0.0F, 0.0F, 1.0F))
-        .scale(size.x, size.y, 1.0F);
+    drawQuad(transform, color, texture, 1.0F);
+  }
 
-    shader.setData("u_Transform", transform);
-    shader.setData("u_Color", new Vector4f(1.0F));
+  public static void drawQuad(
+      Transform transform,
+      Vector4f color,
+      Texture texture,
+      float textureScale
+  ) {
+    shader.setData("u_Transform", transform.getTRS());
+    shader.setData("u_Color", color);
+    shader.setData("u_TexScale", textureScale);
     texture.bind(0);
     vertexArray.bind();
 

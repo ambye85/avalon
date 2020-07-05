@@ -58,7 +58,7 @@ public class OpenGLTexture2D implements Texture2D {
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
-  private OpenGLTexture2D(String path) throws IOException, URISyntaxException {
+  private OpenGLTexture2D(String path) throws URISyntaxException {
     URL res = getClass().getClassLoader().getResource(path);
     File file = Paths.get(res.toURI()).toFile();
     String absolutePath = file.getAbsolutePath();
@@ -106,7 +106,7 @@ public class OpenGLTexture2D implements Texture2D {
   public static OpenGLTexture2D create(String path) {
     try {
       return new OpenGLTexture2D(path);
-    } catch (IOException | URISyntaxException e) {
+    } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }

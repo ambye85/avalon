@@ -20,6 +20,7 @@ import static org.lwjgl.opengl.GL20C.glGetShaderi;
 import static org.lwjgl.opengl.GL20C.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20C.glLinkProgram;
 import static org.lwjgl.opengl.GL20C.glShaderSource;
+import static org.lwjgl.opengl.GL20C.glUniform1f;
 import static org.lwjgl.opengl.GL20C.glUniform1i;
 import static org.lwjgl.opengl.GL20C.glUniform3f;
 import static org.lwjgl.opengl.GL20C.glUniform4f;
@@ -204,6 +205,11 @@ public class OpenGLShader implements Shader {
   }
 
   @Override
+  public void setData(String name, float value) {
+    uploadUniform(name, value);
+  }
+
+  @Override
   public void setData(String name, Vector3f vector) {
     uploadUniform(name, vector);
   }
@@ -221,6 +227,11 @@ public class OpenGLShader implements Shader {
   public void uploadUniform(String name, int value) {
     int location = glGetUniformLocation(programId, name);
     glUniform1i(location, value);
+  }
+
+  public void uploadUniform(String name, float value) {
+    int location = glGetUniformLocation(programId, name);
+    glUniform1f(location, value);
   }
 
   public void uploadUniform(String name, Matrix4f matrix) {

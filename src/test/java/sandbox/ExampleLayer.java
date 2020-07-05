@@ -136,7 +136,7 @@ class ExampleLayer extends Layer {
     checkerboardTexture = Texture2D.create("textures/Checkerboard.png");
     dukeWavingTexture = Texture2D.create("textures/Duke_waving.png");
 
-    var textureShader = shaderLibrary.get("texture").get();
+    var textureShader = shaderLibrary.get("texture").orElseThrow(() -> new RuntimeException("texture shader not found"));
     textureShader.bind();
     ((OpenGLShader) textureShader).uploadUniform("u_Texture", 0);
 
@@ -157,9 +157,9 @@ class ExampleLayer extends Layer {
 
     Renderer.beginScene(cameraController.getCamera());
 
-    var flatColorShader = shaderLibrary.get("flatColour").get();
+    var flatColorShader = shaderLibrary.get("flatColour").orElseThrow(() -> new RuntimeException("flatColour shader not found"));
     flatColorShader.bind();
-    ((OpenGLShader) flatColorShader).uploadUniform("u_Color", new Vector3f(squareColor));
+    flatColorShader.setData("u_Color", new Vector3f(squareColor));
 
     for (int y = 0; y < 20; y++) {
       for (int x = 0; x < 20; x++) {
@@ -170,7 +170,7 @@ class ExampleLayer extends Layer {
       }
     }
 
-    var textureShader = shaderLibrary.get("texture").get();
+    var textureShader = shaderLibrary.get("texture").orElseThrow(() -> new RuntimeException("texture shader not found"));
     checkerboardTexture.bind(0);
     Renderer.submit(textureShader, squareVertexArray, new Matrix4f().scale(1.5F));
     checkerboardTexture.unbind();
