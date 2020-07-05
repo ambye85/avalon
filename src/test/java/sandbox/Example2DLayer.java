@@ -2,6 +2,7 @@ package sandbox;
 
 import imgui.ImGui;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import uk.ashleybye.avalon.Layer;
@@ -12,6 +13,7 @@ import uk.ashleybye.avalon.renderer.BufferLayout;
 import uk.ashleybye.avalon.renderer.IndexBuffer;
 import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer;
+import uk.ashleybye.avalon.renderer.Renderer2D;
 import uk.ashleybye.avalon.renderer.Shader;
 import uk.ashleybye.avalon.renderer.ShaderDataType;
 import uk.ashleybye.avalon.renderer.VertexArray;
@@ -21,8 +23,7 @@ public class Example2DLayer extends Layer {
 
   private final OrthographicCameraController cameraController = new OrthographicCameraController(
       1280.0 / 720.0);
-  private final float[] squareColor = new float[]{0.2F, 0.3F, 0.8F, 1.0F};
-  private final Shader shader = Shader.create("shaders/flatColour.glsl");
+  private final float[] squareColor = new float[]{0.8F, 0.2F, 0.3F, 1.0F};
   private VertexArray vertexArray;
 
   public Example2DLayer() {
@@ -31,25 +32,6 @@ public class Example2DLayer extends Layer {
 
   @Override
   public void onAttach() {
-    float[] vertices = new float[]{
-        -0.5F, -0.5F, 0.0F, 0.0F, 0.0F,
-        +0.5F, -0.5F, 0.0F, 1.0F, 0.0F,
-        +0.5F, +0.5F, 0.0F, 1.0F, 1.0F,
-        -0.5F, +0.5F, 0.0F, 0.0F, 1.0F,
-    };
-
-    vertexArray = VertexArray.create();
-    BufferLayout layout = BufferLayout.builder()
-        .addElement(ShaderDataType.FLOAT_3, "a_Position")
-        .addElement(ShaderDataType.FLOAT_2, "a_TexCoord")
-        .build();
-    var vertexBuffer = VertexBuffer.create(vertices);
-    vertexBuffer.setLayout(layout);
-    vertexArray.addVertexBuffer(vertexBuffer);
-
-    int[] indices = new int[]{0, 1, 2, 2, 3, 0};
-    var indexBuffer = IndexBuffer.create(indices);
-    vertexArray.setIndexBuffer(indexBuffer);
   }
 
   @Override
@@ -59,14 +41,15 @@ public class Example2DLayer extends Layer {
     RenderCommand.setClearColor(0.0F, 0.0F, 0.0F, 1.0F);
     RenderCommand.clear();
 
-    Renderer.beginScene(cameraController.getCamera());
+    Renderer2D.beginScene(cameraController.getCamera());
 
-    shader.bind();
-    ((OpenGLShader) shader).uploadUniform("u_Color", new Vector4f(squareColor));
-    Matrix4f transform = new Matrix4f().translate(new Vector3f());
-    Renderer.submit(shader, vertexArray, transform);
+//    shader.bind();
+//    ((OpenGLShader) shader).uploadUniform("u_Color", new Vector4f(squareColor));
+//    Matrix4f transform = new Matrix4f().translate(new Vector3f());
+//    Renderer2D.submit(shader, vertexArray, transform);
+    Renderer2D.drawQuad(new Vector2f(0.0F, 0.0F), new Vector2f(1.0F, 1.0F), new Vector4f(squareColor));
 
-    Renderer.endScene();
+    Renderer2D.endScene();
   }
 
   @Override
@@ -83,6 +66,5 @@ public class Example2DLayer extends Layer {
 
   @Override
   public void onDetach() {
-    shader.dispose();
   }
 }

@@ -71,6 +71,7 @@ public abstract class Application {
     }
 
     popOverlay(imGuiLayer);
+    Renderer.dispose();
     window.dispose();
   }
 

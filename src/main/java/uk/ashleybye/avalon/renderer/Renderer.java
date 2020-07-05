@@ -10,6 +10,11 @@ public class Renderer {
 
   public static void init() {
     RenderCommand.init();
+    Renderer2D.init();
+  }
+
+  public static void dispose() {
+    Renderer2D.dispose();
   }
 
   public static void onWindowResize(int width, int height) {
