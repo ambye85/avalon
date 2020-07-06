@@ -1,8 +1,8 @@
 package sandbox;
 
 import imgui.ImGui;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import java.util.ArrayList;
+import java.util.List;
 import org.joml.Vector4f;
 import uk.ashleybye.avalon.Layer;
 import uk.ashleybye.avalon.OrthographicCameraController;
@@ -11,6 +11,8 @@ import uk.ashleybye.avalon.renderer.RenderCommand;
 import uk.ashleybye.avalon.renderer.Renderer2D;
 import uk.ashleybye.avalon.renderer.Texture2D;
 import uk.ashleybye.avalon.renderer.Transform;
+import uk.ashleybye.avalon.profiler.ProfilerResult;
+import uk.ashleybye.avalon.profiler.ProfilerTimer;
 
 public class Example2DLayer extends Layer {
 
@@ -22,6 +24,7 @@ public class Example2DLayer extends Layer {
   private final Transform rotatedSquareTransform = new Transform();
   private final Transform checkerboardTransform = new Transform();
   private final Transform rotatedCheckerboardTransform = new Transform();
+  private final List<ProfilerResult> profilerResults = new ArrayList<>();
 
   public Example2DLayer() {
     super("2D Example Layer");
@@ -48,11 +51,18 @@ public class Example2DLayer extends Layer {
 
   @Override
   public void onUpdate(double dt) {
-    cameraController.onUpdate(dt);
+    var methodTimer = new ProfilerTimer("Example2DLayer.onUpdate", profilerResults::add);
 
+    var cameraTimer = new ProfilerTimer("cameraController.onUpdate", profilerResults::add);
+    cameraController.onUpdate(dt);
+    cameraTimer.stop();
+
+    var preRenderTimer = new ProfilerTimer("Pre-render", profilerResults::add);
     RenderCommand.setClearColor(0.0F, 0.0F, 0.0F, 1.0F);
     RenderCommand.clear();
+    preRenderTimer.stop();
 
+    var renderTimer = new ProfilerTimer("Render", profilerResults::add);
     Renderer2D.beginScene(cameraController.getCamera());
     Renderer2D.drawQuad(adjustableSquareTransform, new Vector4f(squareColor));
     Renderer2D.drawQuad(rotatedSquareTransform, new Vector4f(0.2F, 0.3F, 0.8F, 1.0F));
@@ -63,6 +73,9 @@ public class Example2DLayer extends Layer {
         checkerboardTexture
     );
     Renderer2D.endScene();
+    renderTimer.stop();
+
+    methodTimer.stop();
   }
 
   @Override
@@ -74,6 +87,11 @@ public class Example2DLayer extends Layer {
   public void onImGuiRender() {
     ImGui.begin("Settings");
     ImGui.colorEdit4("Square Color", squareColor);
+    ImGui.end();
+
+    ImGui.begin("Profiler");
+    profilerResults.forEach(pr -> ImGui.text(String.format("%.3fms: %s", pr.time(), pr.name())));
+    profilerResults.clear();
     ImGui.end();
   }
 
