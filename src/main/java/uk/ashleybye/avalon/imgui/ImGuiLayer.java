@@ -60,12 +60,6 @@ public class ImGuiLayer extends Layer {
     imGuiGl3.render(ImGui.getDrawData());
   }
 
-  @Override
-  public void onImGuiRender() {
-//    ImBoolean show = new ImBoolean(true);
-//    ImGui.showDemoWindow(show);
-  }
-
 /*********************************************************************/
   /* KEEPING FOR NOW AS USEFUL FOR WHEN TURNING INTO OWN IMGUI BACKEND */
 /*********************************************************************/

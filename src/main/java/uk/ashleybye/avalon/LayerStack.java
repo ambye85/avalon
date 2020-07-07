@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class LayerStack implements Iterable<Layer> {
+public class LayerStack {
 
   private final List<Layer> layers;
   private int currentLayer;
@@ -31,22 +31,40 @@ public class LayerStack implements Iterable<Layer> {
     layers.add(currentLayer++, layer);
   }
 
-  @Override
-  public LayerStackIterator iterator() {
-    return new LayerStackIterator();
+  public LayerStackIterator all() {
+    return new LayerStackIterator(0, layers.size());
+  }
+
+  public LayerStackIterator allLayers() {
+    return new LayerStackIterator(0, currentLayer);
+  }
+
+  public LayerStackIterator allOverlays() {
+    return new LayerStackIterator(currentLayer, layers.size());
   }
 
   public LayerStackReverseIterator reversed() {
     return new LayerStackReverseIterator();
   }
 
-  class LayerStackIterator implements Iterator<Layer> {
+  class LayerStackIterator implements Iterable<Layer>, Iterator<Layer> {
 
-    int current = 0;
+    private int current;
+    private final int limit;
+
+    LayerStackIterator(int start, int end) {
+      current = start;
+      limit = end;
+    }
+
+    @Override
+    public LayerStackIterator iterator() {
+      return this;
+    }
 
     @Override
     public boolean hasNext() {
-      return current < layers.size();
+      return current < limit;
     }
 
     @Override

@@ -7,6 +7,7 @@ import uk.ashleybye.avalon.event.EventDispatcher;
 import uk.ashleybye.avalon.event.WindowCloseEvent;
 import uk.ashleybye.avalon.event.WindowResizeEvent;
 import uk.ashleybye.avalon.imgui.ImGuiLayer;
+import uk.ashleybye.avalon.instrumentation.Instrumentor;
 import uk.ashleybye.avalon.renderer.Renderer;
 import uk.ashleybye.avalon.time.Timer;
 import uk.ashleybye.avalon.window.Window;
@@ -24,6 +25,7 @@ public abstract class Application {
   private boolean minimised = false;
 
   public Application() {
+    Instrumentor.get().beginSession("Initialisation", "instrumentation/avalon-initialisation.json");
     instance = this;
 
     layers = new LayerStack();
@@ -37,6 +39,7 @@ public abstract class Application {
     pushOverlay(imGuiLayer);
 
     timer = Timer.create();
+    Instrumentor.get().endSession();
   }
 
   public static Application getInstance() {
@@ -48,6 +51,7 @@ public abstract class Application {
   }
 
   public final void run() {
+    Instrumentor.get().beginSession("Running", "instrumentation/avalon-execution.json");
     timer.start();
     running = true;
     while (running) {
@@ -56,23 +60,27 @@ public abstract class Application {
       double dt = timer.getDeltaSeconds();
 
       if (!minimised) {
-        for (var layer : layers) {
+        for (var layer : layers.all()) {
           layer.onUpdate(dt);
         }
       }
 
       imGuiLayer.begin();
-      for (var layer : layers) {
+      for (var layer : layers.all()) {
         layer.onImGuiRender();
       }
       imGuiLayer.end();
 
       window.onUpdate();
     }
+    Instrumentor.get().endSession();
 
-    popOverlay(imGuiLayer);
+    Instrumentor.get().beginSession("Shutdown", "instrumentation/avalon-shutdown.json");
+    layers.allOverlays().forEach(this::popOverlay);
+    layers.allLayers().forEach(this::popLayer);
     Renderer.dispose();
     window.dispose();
+    Instrumentor.get().endSession();
   }
 
   public final boolean onEvent(Event e) {

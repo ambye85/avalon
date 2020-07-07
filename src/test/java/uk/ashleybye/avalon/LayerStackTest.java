@@ -4,24 +4,25 @@ import static com.google.common.truth.Truth.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 class LayerStackTest {
 
   @Test
   void pushSingleLayerOntoStack() {
-    var layer = new LayerStub("layer 0");
+    var layer = new LayerStub("layer");
     var stack = new LayerStack();
 
     stack.pushLayer(layer);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(1);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer.getDebugName());
   }
 
   @Test
@@ -34,13 +35,13 @@ class LayerStackTest {
     stack.pushLayer(layer1);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(2);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("layer 1");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer0.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer1.getDebugName());
   }
 
   @Test
@@ -54,12 +55,12 @@ class LayerStackTest {
     stack.popLayer(layer1);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(1);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer0.getDebugName());
   }
 
   @Test
@@ -73,12 +74,12 @@ class LayerStackTest {
     stack.popLayer(layer0);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(1);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 1");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer1.getDebugName());
   }
 
   @Test
@@ -94,29 +95,29 @@ class LayerStackTest {
     stack.pushLayer(layer2);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(2);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 1");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("layer 2");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer1.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer2.getDebugName());
   }
 
   @Test
   void pushSingleOverlayOntoStack() {
-    var layer = new LayerStub("layer 0");
+    var layer = new LayerStub("layer");
     var stack = new LayerStack();
 
     stack.pushOverlay(layer);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(1);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer.getDebugName());
   }
 
   @Test
@@ -129,13 +130,13 @@ class LayerStackTest {
     stack.pushOverlay(layer1);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(2);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("layer 1");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer0.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer1.getDebugName());
   }
 
   @Test
@@ -149,12 +150,12 @@ class LayerStackTest {
     stack.popOverlay(layer1);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(1);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer0.getDebugName());
   }
 
   @Test
@@ -168,12 +169,12 @@ class LayerStackTest {
     stack.popOverlay(layer0);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(1);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 1");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer1.getDebugName());
   }
 
   @Test
@@ -189,13 +190,13 @@ class LayerStackTest {
     stack.pushOverlay(layer2);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(2);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 1");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("layer 2");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer1.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer2.getDebugName());
   }
 
   @Test
@@ -208,13 +209,13 @@ class LayerStackTest {
     stack.pushLayer(layer);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(2);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("overlay");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(overlay.getDebugName());
   }
 
   @Test
@@ -237,15 +238,15 @@ class LayerStackTest {
     stack.pushLayer(layer2);
 
     List<Layer> layers = new ArrayList<>();
-    for (Layer l : stack) {
+    for (Layer l : stack.all()) {
       layers.add(l);
     }
 
     assertThat(layers.size()).isEqualTo(4);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("layer 0");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("layer 2");
-    assertThat(layers.get(2).getDebugName()).isEqualTo("overlay 0");
-    assertThat(layers.get(3).getDebugName()).isEqualTo("overlay 2");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer0.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer2.getDebugName());
+    assertThat(layers.get(2).getDebugName()).isEqualTo(overlay0.getDebugName());
+    assertThat(layers.get(3).getDebugName()).isEqualTo(overlay2.getDebugName());
   }
 
   @Test
@@ -263,8 +264,40 @@ class LayerStackTest {
     }
 
     assertThat(layers.size()).isEqualTo(2);
-    assertThat(layers.get(0).getDebugName()).isEqualTo("overlay");
-    assertThat(layers.get(1).getDebugName()).isEqualTo("layer");
+    assertThat(layers.get(0).getDebugName()).isEqualTo(overlay.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer.getDebugName());
+  }
+
+  @Test
+  void iteratesLayersAndOverlaysSeparately() {
+    var layer0 = new LayerStub("layer 0");
+    var layer1 = new LayerStub("layer 1");
+    var overlay0 = new LayerStub("overlay 0");
+    var overlay1 = new LayerStub("overlay 1");
+    var stack = new LayerStack();
+
+    stack.pushLayer(layer0);
+    stack.pushLayer(layer1);
+    stack.pushOverlay(overlay0);
+    stack.pushOverlay(overlay1);
+
+    List<Layer> layers = new ArrayList<>();
+    for (Layer l : stack.allLayers()) {
+      layers.add(l);
+    }
+
+    List<Layer> overlays = new ArrayList<>();
+    for (Layer o : stack.allOverlays()) {
+      overlays.add(o);
+    }
+
+    assertThat(layers.size()).isEqualTo(2);
+    assertThat(layers.get(0).getDebugName()).isEqualTo(layer0.getDebugName());
+    assertThat(layers.get(1).getDebugName()).isEqualTo(layer1.getDebugName());
+
+    assertThat(overlays.size()).isEqualTo(2);
+    assertThat(overlays.get(0).getDebugName()).isEqualTo(overlay0.getDebugName());
+    assertThat(overlays.get(1).getDebugName()).isEqualTo(overlay1.getDebugName());
   }
 }
 

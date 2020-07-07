@@ -1,6 +1,7 @@
 package sandbox;
 
 import uk.ashleybye.avalon.Application;
+import uk.ashleybye.avalon.instrumentation.Instrumentor;
 
 public class Sandbox extends Application {
 
@@ -11,6 +12,8 @@ public class Sandbox extends Application {
   }
 
   public static void main(String[] args) {
+    Instrumentor.setEnabled(true);
+
     var sandbox = new Sandbox();
     sandbox.run();
   }
